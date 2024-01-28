@@ -85,7 +85,7 @@ rsi = RSI(frame('BTCUSDT', '1h', '24h'))
 
 ###### EMA ######
 ema = EMA(frame('BTCUSDT', '1h', '34h'))
-#print(ema[-3:])
+# print(ema[-3:])
 
 ###### MACD ######
 macd = MACD(frame('BTCUSDT', '1h', '34h'))
