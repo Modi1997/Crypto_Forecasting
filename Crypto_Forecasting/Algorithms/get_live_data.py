@@ -29,6 +29,6 @@ def get_data(symbol, interval, lookback):
 
     return frame
 
-# example of usage
+# usage example
 # last row of the data is the live price
 btc_data = get_data("BTCUSDT", "1h", "24h")
