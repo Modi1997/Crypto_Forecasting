@@ -1,6 +1,6 @@
 import talib  # technical analysis library
 import pandas as pd
-from binance_api_account_request import *
+from binance_api_request import *
 
 
 def frame(symbol, interval, lookback):
