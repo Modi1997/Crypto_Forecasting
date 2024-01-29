@@ -21,6 +21,7 @@ def get_data(symbol, interval, lookback):
     frame = frame.iloc[:,:6]
     # name these columns as their headers are just numbers
     frame.columns = ['Time', 'Open', 'High', 'Low', 'Close', 'Volume']
+    frame['Date'] = frame['Time']
 
     # set index to time (ms) and convert type to float
     frame = frame.set_index('Time')
@@ -28,7 +29,3 @@ def get_data(symbol, interval, lookback):
     frame = frame.astype(float)
 
     return frame
-
-# usage example
-# last row of the data is the live price
-btc_data = get_data("BTCUSDT", "1h", "24h")

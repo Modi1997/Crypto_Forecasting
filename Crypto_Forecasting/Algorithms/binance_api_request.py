@@ -1,13 +1,12 @@
 # This is a python file where we are installing Binance library
 # for client requests and connect our API key with the back-end
 
-
 # pip install python-binance and import client for API request
 from binance.client import Client
 
 # secret key and api connection/pass provided by account on binance
-api_key = '*************************************'
-api_secret = '*************************************'
+api_key = '*********************************************'
+api_secret = '*********************************************'
 
 # client request
 client = Client(api_key, api_secret)

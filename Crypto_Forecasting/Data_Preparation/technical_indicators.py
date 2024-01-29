@@ -76,26 +76,3 @@ def MACD(close: object) -> pd.DataFrame:
 
     macd = talib.MACD(close)
     return macd
-
-
-##################################
-####### Usage Examples ###########
-##################################
-
-###### RSI ######
-rsi = RSI(frame('BTCUSDT', '1h', '24h'))
-# print(rsi[-3:])
-
-###### EMA ######
-ema = EMA(frame('BTCUSDT', '1h', '34h'))
-# print(ema[-3:])
-
-###### MACD ######
-macd = MACD(frame('BTCUSDT', '1h', '34h'))
-
-macd_buy = macd[-1][-2:]
-macd_sell = macd[-2][-2:]
-macd_total = macd[-3][-2:]
-# print(macd_sell)
-# print(macd_buy)
-# print(macd_total)
