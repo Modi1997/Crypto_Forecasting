@@ -1,8 +1,8 @@
 import math
 import sys
 
-sys.path.append('C:/Users/modio/Crypto_Forecasting/Crypto_Forecasting/Algorithms')
-from Algorithms.get_live_data import *
+sys.path.append('C:/Users/modio/Crypto_Forecasting/Crypto_Forecasting/API_and_Data')
+from API_and_Data.get_live_data import *
 
 # pycharm settings to display more columns
 pd.set_option('display.max_columns', 20)

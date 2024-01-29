@@ -2,8 +2,8 @@ import talib  # technical analysis library
 import pandas as pd
 import sys
 
-sys.path.append('C:/Users/modio/Crypto_Forecasting/Crypto_Forecasting/Algorithms')
-from Algorithms.binance_api_request import *
+sys.path.append('C:/Users/modio/Crypto_Forecasting/Crypto_Forecasting/API_and_Data')
+from API_and_Data.binance_api_request import *
 
 
 def frame(symbol, interval, lookback):

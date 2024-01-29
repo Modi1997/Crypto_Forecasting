@@ -1,5 +1,4 @@
 import sys
-sys.path.append('C:/Users/modio/Crypto_Forecasting/Crypto_Forecasting/Algorithms')
 sys.path.append('C:/Users/modio/Crypto_Forecasting/Crypto_Forecasting/Data_Preparation')
 
 from Data_Preparation.feature_engineering import *
@@ -10,13 +9,13 @@ pd.set_option('display.width', 2000)
 
 
 #####################################################################################################################
-####################### (Algorithms.binance_api_request.py) -> (Algorithms.get_live_data.py) ########################
+##################### (API_and_Data.binance_api_request.py) -> (API_and_Data.get_live_data.py) ######################
 btc_data = get_data("BTCUSDT", "1h", "24h")
 #####################################################################################################################
 
 
 #####################################################################################################################
-#################### (Algorithms.get_live_data.py) -> (Data_Preparation.feature_engineering.py) #####################
+################### (API_and_Data.get_live_data.py) -> (Data_Preparation.feature_engineering.py) ####################
 df = get_data("BTCUSDT", "12h", "10000h")
 df_date = append_date_features(df)
 btc_df = create_trigonometric_columns(df_date)
