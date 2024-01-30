@@ -13,11 +13,11 @@ ema = EMA(frame('BTCUSDT', '1h', '34h'))
 ############################## MACD #############################
 macd = MACD(frame('BTCUSDT', '1h', '34h'))
 # macd has 3 arrays (buy, sell, total(buy-sell))
-macd_buy = macd[-1][-2:]
+macd_total = macd[-1]
 macd_sell = macd[-2][-2:]
-macd_total = macd[-3][-2:]
+macd_buy = macd[-3][-2:]
 
 # print results
 print('RSI:', '\n', rsi[-3:], '\n')
 print('EMA:', '\n', ema[-3:], '\n')
-print('MACD (sell, buy, difference):', '\n', macd_sell, '\n', macd_buy, '\n', macd_total)
+print('MACD (sell, buy, difference):', '\n', macd_buy, '\n', macd_sell, '\n', macd_total)
