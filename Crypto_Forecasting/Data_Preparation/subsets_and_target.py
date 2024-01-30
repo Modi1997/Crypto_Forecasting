@@ -7,31 +7,12 @@ from datetime import datetime
 
 sys.path.append('C:/Users/modio/Crypto_Forecasting/Crypto_Forecasting/Data_Preparation')
 
-from Data_Preparation.feature_engineering import *
+from Data_Preparation.final_df import *
 from Data_Preparation.technical_indicators import *
 
 # pycharm settings to display more columns
 pd.set_option('display.max_columns', 20)
 pd.set_option('display.width', 2000)
-
-
-# getting data
-btc_data = get_data("BTCUSDT", "4h", "60000h")
-# add the date features
-df_date = append_date_features(btc_data)
-# add the sine and cosine date features
-btc_df = create_trigonometric_columns(df_date)
-
-# add the RSI indicator to the dataframe
-btc_df['RSI'] = RSI(frame('BTCUSDT', '4h', '60000h'))
-# add the RSI indicator to the dataframe
-btc_df['EMA'] = EMA(frame('BTCUSDT', '4h', '60000h'))
-# add the MACD indicator to the dataframe
-macd = MACD(frame('BTCUSDT', '4h', '60000h'))
-# add the MACD difference (or total) array
-btc_df['MACD'] = macd[-1]
-# print(btc_df)
-
 
 def create_target_variable(df: pd.DataFrame, forecast_lead: int = 1) -> (pd.DataFrame, str):
     """
@@ -81,6 +62,7 @@ df, target = create_target_variable(btc_df)
 train_data, valid_data, test_data = split_train_valid_test(btc_df)
 
 # confirm that proposition is 70/15/15
+print(df)
 print(f"Dataframe length: {len(df)}")
 print("Training set proposition", round((len(train_data)/len(df)), 2), "%")
 print("Validation set proposition", round((len(valid_data)/len(df)), 2), "%")
