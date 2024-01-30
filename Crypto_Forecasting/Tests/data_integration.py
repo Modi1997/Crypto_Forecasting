@@ -2,6 +2,7 @@ import sys
 sys.path.append('C:/Users/modio/Crypto_Forecasting/Crypto_Forecasting/Data_Preparation')
 
 from Data_Preparation.feature_engineering import *
+from Data_Preparation.technical_indicators import *
 
 # pycharm settings to display more columns
 pd.set_option('display.max_columns', 20)
@@ -19,10 +20,19 @@ btc_data = get_data("BTCUSDT", "1h", "24h")
 df = get_data("BTCUSDT", "12h", "10000h")
 df_date = append_date_features(df)
 btc_df = create_trigonometric_columns(df_date)
-print(btc_df)
+#print(btc_df)
 #####################################################################################################################
 
 
 #TODO merge technical indicators cols to the final df
 #####################################################################################################################
 ############# (Data_Preparation.feature_engineering.py) -> (Data_Preparation.technical_indicators.py) ###############
+
+macd = MACD(frame('BTCUSDT', '4h', '200h'))
+
+btc_df['RSI'] = RSI(frame('BTCUSDT', '4h', '200h'))
+btc_df['EMA'] = EMA(frame('BTCUSDT', '4h', '200h'))
+btc_df['MACD'] = macd[-1]
+btc_df['MACD_sell'] = macd[-2]
+btc_df['MACD_buy'] = macd[-3]
+print(btc_df)
