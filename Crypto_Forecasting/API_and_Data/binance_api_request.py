@@ -5,15 +5,13 @@
 from binance.client import Client
 
 # secret key and api connection/pass provided by account on binance
-api_key = 'siP2VBOq44rbgvHfnfWomRb4dcDY7QbVNwAxauetYXGsG9rqCg7YODo3Cn5I57KS'
-api_secret = 'fwgN7NuEXn8hgpBkjVsGs8sYCyqcWRWFv1OkC7jqAepQLLJ5Tehs3vKmifHD7jaS'
+api_key = '************************************'
+api_secret = '************************************'
 
 # client request
 client = Client(api_key, api_secret)
-
 # client account all info
 client_account = client.get_account()
-
 # client_keys of the dictionary
 client_keys = client.get_account().keys()
 # get only the cryptocurrency assets

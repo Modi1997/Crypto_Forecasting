@@ -1,5 +1,6 @@
-import math
 import sys
+
+import numpy as np
 
 sys.path.append('C:/Users/modio/Crypto_Forecasting/Crypto_Forecasting/API_and_Data')
 from API_and_Data.get_live_data import *
@@ -41,11 +42,11 @@ def create_trigonometric_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
 
     # create sine and cosine for the Year, Month and Day columns
-    df['Year_sin'] = df['Year'].apply(lambda x: math.sin(2*math.pi*x/2024))
-    df['Year_cos'] = df['Year'].apply(lambda x: math.cos(2*math.pi*x/2024))
-    df['Month_sin'] = df['Month'].apply(lambda x: math.sin(2*math.pi*x/12))
-    df['Month_cos'] = df['Month'].apply(lambda x: math.cos(2*math.pi*x/12))
-    df['Day_sin'] = df['Day'].apply(lambda x: math.sin(2*math.pi*x/12))
-    df['Day_cos'] = df['Day'].apply(lambda x: math.cos(2*math.pi*x/12))
+    df['Year_sin'] = round(np.sin(df['Year']), 4)
+    df['Year_cos'] = round(np.cos(df['Year']), 4)
+    df['Month_sin'] = round(np.sin(df['Month']), 4)
+    df['Month_cos'] = round(np.cos(df['Month']), 4)
+    df['Day_sin'] = round(np.sin(df['Day']), 4)
+    df['Day_cos'] = round(np.cos(df['Day']), 4)
 
     return df

@@ -14,6 +14,7 @@ from Data_Preparation.technical_indicators import *
 pd.set_option('display.max_columns', 20)
 pd.set_option('display.width', 2000)
 
+
 def create_target_variable(df: pd.DataFrame, forecast_lead: int = 1) -> (pd.DataFrame, str):
     """
     This function is designed to create a new target variable for time-series forecasting by shifting the values of
@@ -30,8 +31,10 @@ def create_target_variable(df: pd.DataFrame, forecast_lead: int = 1) -> (pd.Data
 
     # create the 'Close_lead_1' col
     target_name = f"{target_column}_lead_{forecast_lead}"
-    df[target_name] = df[target_column].shift(-forecast_lead)
-    df = df.iloc[:-forecast_lead]
+
+    # remove the forecast_lead rows as they need to be predicted
+    df[target_name] = df[target_column]#.shift(-forecast_lead)
+    # df = df.iloc[:-forecast_lead]
 
     return df, target_name
 
@@ -56,14 +59,17 @@ def split_train_valid_test(data: pd.DataFrame):
 
     return train_data, valid_data, test_data
 
+
+# get btc data with a 4h interval
+btc_data = get_df("BTCUSDT", "4h", "60000h")
 # get new df and target
-df, target = create_target_variable(btc_df)
+df, target = create_target_variable(btc_data)
 # get training, validation and testing data proposition
-train_data, valid_data, test_data = split_train_valid_test(btc_df)
+train_data, valid_data, test_data = split_train_valid_test(btc_data)
 
 # confirm that proposition is 70/15/15
 print(df)
 print(f"Dataframe length: {len(df)}")
-print("Training set proposition", round((len(train_data)/len(df)), 2), "%")
-print("Validation set proposition", round((len(valid_data)/len(df)), 2), "%")
-print("Testing set proposition", round((len(test_data)/len(df)), 2), "%")
+print("Training set proposition", round((len(train_data) / len(df)), 2), "%")
+print("Validation set proposition", round((len(valid_data) / len(df)), 2), "%")
+print("Testing set proposition", round((len(test_data) / len(df)), 2), "%")

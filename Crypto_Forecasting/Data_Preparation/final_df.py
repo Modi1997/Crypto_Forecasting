@@ -1,34 +1,43 @@
 import sys
+
 sys.path.append('C:/Users/modio/Crypto_Forecasting/Crypto_Forecasting/Data_Preparation')
 
 from Data_Preparation.feature_engineering import *
 from Data_Preparation.technical_indicators import *
 
 
-# getting data
-btc_data = get_data("BTCUSDT", "4h", "60000h")
-# add the date features
-df_date = append_date_features(btc_data)
-# add the sine and cosine date features
-btc_df = create_trigonometric_columns(df_date)
+def get_df(symbol: str, interval: str, lookback: str) -> pd.DataFrame:
+    """
+    This is function is merging the technical analysis indicators and feature engineering
+    columns with the original df given from the get_data function.
 
-# add the RSI indicator to the dataframe
-btc_df['RSI'] = RSI(frame('BTCUSDT', '4h', '60000h'))
-# add the RSI indicator to the dataframe
-btc_df['EMA'] = EMA(frame('BTCUSDT', '4h', '60000h'))
-# add the MACD indicator to the dataframe
-macd = MACD(frame('BTCUSDT', '4h', '60000h'))
-# add the MACD difference (or total) array
-btc_df['MACD'] = macd[-1]
+    :param symbol: pair symbol such as BTCUSDT
+    :param interval: bar or time interval (seconds, minutes or hours)
+    :param lookback: seconds, minutes or hours of data to look back
+    :return: dataframe
+    """
 
-# check for null values (indicators should have a few)
-old_missing_values = btc_df.isnull().sum()
-# columns to replace NaN values in
-columns_to_fill = ['RSI', 'EMA', 'MACD']
+    # getting data
+    data = get_data(symbol, interval, lookback)
+    # add the date features
+    df_date = append_date_features(data)
+    # add the sine and cosine date features
+    df = create_trigonometric_columns(df_date)
 
-# replace NaN values with mean for each specified column
-for column in columns_to_fill:
-    mean_value = btc_df[column].mean()
-    btc_df[column] = btc_df[column].fillna(mean_value)
+    # add the RSI indicator to the dataframe
+    df['RSI'] = round(RSI(frame(symbol, interval, lookback)), 2)
+    # add the RSI indicator to the dataframe
+    df['EMA'] = round(EMA(frame(symbol, interval, lookback)), 2)
+    # add the MACD indicator to the dataframe
+    macd = MACD(frame(symbol, interval, lookback))
+    # add the MACD difference (or total) array
+    df['MACD'] = round(macd[-1], 2)
 
-# our final df is ready: btc_df
+    # filling the missing values on the indicators
+    columns_to_fill = ['RSI', 'EMA', 'MACD']
+    # replace NaN values with mean for each specified column
+    for column in columns_to_fill:
+        mean_value = round(df[column].mean(), 2)
+        df[column] = df[column].fillna(mean_value)
+
+    return df
