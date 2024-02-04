@@ -5,8 +5,8 @@
 from binance.client import Client
 
 # secret key and api connection/pass provided by account on binance
-api_key = '************************************'
-api_secret = '************************************'
+api_key = 'siP2VBOq44rbgvHfnfWomRb4dcDY7QbVNwAxauetYXGsG9rqCg7YODo3Cn5I57KS'
+api_secret = 'fwgN7NuEXn8hgpBkjVsGs8sYCyqcWRWFv1OkC7jqAepQLLJ5Tehs3vKmifHD7jaS'
 
 # client request
 client = Client(api_key, api_secret)

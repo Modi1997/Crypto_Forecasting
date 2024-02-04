@@ -27,16 +27,16 @@ def create_target_variable(df: pd.DataFrame, forecast_lead: int = 1) -> (pd.Data
 
     # distinct target col and rest of the features
     target_column = "Close"
-    features = list(df.columns.difference([target_column]))
+    features_list = list(df.columns.difference([target_column]))
 
     # create the 'Close_lead_1' col
     target_name = f"{target_column}_lead_{forecast_lead}"
 
     # remove the forecast_lead rows as they need to be predicted
-    df[target_name] = df[target_column]#.shift(-forecast_lead)
+    # df[target_name] = df[target_column].shift(-forecast_lead)
     # df = df.iloc[:-forecast_lead]
 
-    return df, target_name
+    return df, target_column, features_list
 
 
 def split_train_valid_test(data: pd.DataFrame):
@@ -63,7 +63,7 @@ def split_train_valid_test(data: pd.DataFrame):
 # get btc data with a 4h interval
 btc_data = get_df("BTCUSDT", "4h", "60000h")
 # get new df and target
-df, target = create_target_variable(btc_data)
+df, target, features = create_target_variable(btc_data)
 # get training, validation and testing data proposition
 train_data, valid_data, test_data = split_train_valid_test(btc_data)
 
