@@ -4,15 +4,16 @@ from sklearn.preprocessing import MinMaxScaler
 import tensorflow as tf
 from Data_Preparation.final_df import get_df
 from Data_Preparation.subsets_and_target import create_target_variable
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 import numpy as np
+import warnings
+
+warnings.filterwarnings('ignore')
 
 # data
 df = get_df("BTCUSDT", "4h", "60000h")
 # target, features
 coin_df, target, features = create_target_variable(df)
-
-data = df['Close'].values.reshape(-1, 1)
 
 # Assuming df is your DataFrame
 # Extract the 'Close' column for prediction
@@ -21,6 +22,7 @@ data = df['Close'].values.reshape(-1, 1)
 # Normalize the data
 scaler = MinMaxScaler(feature_range=(0, 1))
 data_scaled = scaler.fit_transform(data)
+
 
 # Function to create sequences and labels for training the LSTM
 def create_sequences(data, seq_length):
@@ -32,9 +34,10 @@ def create_sequences(data, seq_length):
         labels.append(label)
     return np.array(sequences), np.array(labels)
 
+
 # Define hyperparameters
-seq_length = 10  # Length of the input sequences
-epochs = 50
+seq_length = 15  # results: 3 bad, 10 normal, 15 good
+epochs = 70
 batch_size = 32
 
 # Create sequences and labels
@@ -71,16 +74,38 @@ y_pred = model.predict(X_test)
 y_pred_original = scaler.inverse_transform(y_pred)
 y_test_original = scaler.inverse_transform(y_test.reshape(-1, 1))
 
-# Calculate and print the RMSE
+# Calculate the MAE and RMSE
+mae = mean_absolute_error(y_test_original, y_pred_original)
 rmse = np.sqrt(mean_squared_error(y_test_original, y_pred_original))
+print(f"Mean Absolute Error (MAE): {mae}")
 print(f"Root Mean Squared Error (RMSE): {rmse}")
 
-# Plot the actual vs. predicted values
+# Plot the actual vs. predicted values as a line chart
 plt.figure(figsize=(12, 6))
-plt.plot(df.index[-len(y_test):], y_test_original, label='Actual Close', marker='o')
-plt.plot(df.index[-len(y_test):], y_pred_original, label='Predicted Close', marker='o')
+plt.plot(df.index[-len(y_test):], y_test_original, label='Actual Close')
+plt.plot(df.index[-len(y_test):], y_pred_original, label='Predicted Close')
 plt.title('LSTM Close Price Prediction')
 plt.xlabel('Time')
 plt.ylabel('Close Price')
 plt.legend()
+plt.grid(True)  # Add grid for better visualization
 plt.show()
+
+# Extract loss values from the history
+train_loss = history.history['loss']
+val_loss = history.history['val_loss']
+
+# Plot training and validation loss
+plt.figure(figsize=(10, 6))
+plt.plot(range(2, epochs + 1), train_loss[1:], label='Training Loss', marker='o')
+plt.plot(range(2, epochs + 1), val_loss[1:], label='Validation Loss', marker='o')
+plt.title('Training and Validation Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# TODO hyperparameter tunning
+# testing mse/mae in different timeframes such as 1h 4h 12h...
+# add a frame to open a new tab for vizualisation
