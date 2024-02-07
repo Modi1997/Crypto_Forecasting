@@ -60,16 +60,16 @@ def split_train_valid_test(data: pd.DataFrame):
     return train_data, valid_data, test_data
 
 
-# get btc data with a 4h interval
-btc_data = get_df("BTCUSDT", "4h", "60000h")
-# get new df and target
-df, target, features = create_target_variable(btc_data)
-# get training, validation and testing data proposition
-train_data, valid_data, test_data = split_train_valid_test(btc_data)
-
-# confirm that proposition is 70/15/15
-print(df)
-print(f"Dataframe length: {len(df)}")
-print("Training set proposition", round((len(train_data) / len(df)), 2), "%")
-print("Validation set proposition", round((len(valid_data) / len(df)), 2), "%")
-print("Testing set proposition", round((len(test_data) / len(df)), 2), "%")
+# # get btc data with a 4h interval
+# btc_data = get_df("BTCUSDT", "4h", "60000h")
+# # get new df and target
+# df, target, features = create_target_variable(btc_data)
+# # get training, validation and testing data proposition
+# train_data, valid_data, test_data = split_train_valid_test(btc_data)
+#
+# # confirm that proposition is 70/15/15
+# print(df)
+# print(f"Dataframe length: {len(df)}")
+# print("Training set proposition", round((len(train_data) / len(df)), 2), "%")
+# print("Validation set proposition", round((len(valid_data) / len(df)), 2), "%")
+# print("Testing set proposition", round((len(test_data) / len(df)), 2), "%")
