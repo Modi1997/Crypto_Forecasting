@@ -6,6 +6,8 @@ from Data_Preparation.final_df import get_df
 from Data_Preparation.subsets_and_target import create_target_variable
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 import numpy as np
+import plotly.express as px
+import pandas as pd
 import warnings
 
 warnings.filterwarnings('ignore')
@@ -37,7 +39,7 @@ def create_sequences(data, seq_length):
 
 # Define hyperparameters
 seq_length = 15  # results: 3 bad, 10 normal, 15 good
-epochs = 70
+epochs = 50
 batch_size = 32
 
 # Create sequences and labels
@@ -80,16 +82,20 @@ rmse = np.sqrt(mean_squared_error(y_test_original, y_pred_original))
 print(f"Mean Absolute Error (MAE): {mae}")
 print(f"Root Mean Squared Error (RMSE): {rmse}")
 
-# Plot the actual vs. predicted values as a line chart
-plt.figure(figsize=(12, 6))
-plt.plot(df.index[-len(y_test):], y_test_original, label='Actual Close')
-plt.plot(df.index[-len(y_test):], y_pred_original, label='Predicted Close')
-plt.title('LSTM Close Price Prediction')
-plt.xlabel('Time')
-plt.ylabel('Close Price')
-plt.legend()
-plt.grid(True)  # Add grid for better visualization
-plt.show()
+# Create a DataFrame containing the actual and predicted values along with the corresponding timestamps
+df_plot = pd.DataFrame({
+    'Time': df.index[-len(y_test):],
+    'Actual Close': y_test_original.flatten(),
+    'Predicted Close': y_pred_original.flatten()
+})
+
+# Create a line plot using Plotly Express
+fig = px.line(df_plot, x='Time', y=['Actual Close', 'Predicted Close'], title='LSTM Close Price Prediction',
+              labels={'Time': 'Time', 'value': 'Close Price', 'variable': 'Type'})
+fig.update_layout(xaxis_title='Time', yaxis_title='Close Price', legend_title='Type', hovermode='x')
+
+# Show the plot
+fig.show()
 
 # Extract loss values from the history
 train_loss = history.history['loss']
@@ -105,7 +111,3 @@ plt.ylabel('Loss')
 plt.legend()
 plt.grid(True)
 plt.show()
-
-# TODO hyperparameter tunning
-# testing mse/mae in different timeframes such as 1h 4h 12h...
-# add a frame to open a new tab for vizualisation
