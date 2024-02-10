@@ -57,7 +57,7 @@ X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.
 model = tf.keras.Sequential([
     tf.keras.layers.LSTM(units=units, activation='relu', input_shape=(seq_length, 1)),
     tf.keras.layers.Dense(units=1)
-])
+    ])
 
 # Compile the model
 model.compile(optimizer='adam', loss='mean_squared_error')
@@ -69,7 +69,7 @@ history = model.fit(
     batch_size=batch_size,
     validation_data=(X_val, y_val),
     verbose=1
-)
+    )
 
 # Evaluate the model on the test set
 y_pred = model.predict(X_test)
@@ -89,13 +89,18 @@ df_plot = pd.DataFrame({
     'Time': df.index[-len(y_test):],
     'Actual Close': y_test_original.flatten(),
     'Predicted Close': y_pred_original.flatten()
-})
+    })
 
 # Create a line plot using Plotly Express
-fig = px.line(df_plot, x='Time', y=['Actual Close', 'Predicted Close'], title='LSTM Close Price Prediction',
+fig_lstm = px.line(df_plot, x='Time',
+              y=['Actual Close', 'Predicted Close'],
+              title='LSTM Close Price Prediction',
               labels={'Time': 'Time', 'value': 'Close Price', 'variable': 'Type'})
-fig.update_layout(xaxis_title='Time', yaxis_title='Close Price', legend_title='Type', hovermode='x')
-fig.show()
+fig_lstm.update_layout(xaxis_title='Time',
+                       yaxis_title='Close Price',
+                       legend_title='Type',
+                       hovermode='x')
+fig_lstm.show()
 
 # Extract loss values from the history
 train_loss = history.history['loss']

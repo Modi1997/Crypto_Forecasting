@@ -11,7 +11,7 @@ import plotly.express as px
 
 
 # data
-df = get_df("BTCUSDT", "12h", "60000h")
+df = get_df("BTCUSDT", "4h", "60000h")
 # target, features
 coin_df, target, features = create_target_variable(df)
 # Extract the 'Close' column for prediction
@@ -84,10 +84,16 @@ df_plot = pd.DataFrame({
 })
 
 # Create a line plot using Plotly Express
-fig = px.line(df_plot, x='Time', y=['Actual Close', 'Predicted Close'], title='LSTM Close Price Prediction',
+fig_gru = px.line(df_plot,
+              x='Time',
+              y=['Actual Close', 'Predicted Close'],
+              title='LSTM Close Price Prediction',
               labels={'Time': 'Time', 'value': 'Close Price', 'variable': 'Type'})
-fig.update_layout(xaxis_title='Time', yaxis_title='Close Price', legend_title='Type', hovermode='x')
-fig.show()
+fig_gru.update_layout(xaxis_title='Time',
+                  yaxis_title='Close Price',
+                  legend_title='Type',
+                  hovermode='x')
+fig_gru.show()
 
 # Plot training and validation loss
 train_loss = history.history['loss']
