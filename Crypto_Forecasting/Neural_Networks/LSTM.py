@@ -8,9 +8,13 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 import numpy as np
 import plotly.express as px
 import pandas as pd
+import os
 import warnings
 
+# filtering tensorflow and general (alert) warnings
 warnings.filterwarnings('ignore')
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 
 # data
 df = get_df("BTCUSDT", "4h", "60000h")
@@ -38,9 +42,10 @@ def create_sequences(data, seq_length):
 
 
 # Define hyperparameters
-seq_length = 15  # results: 3 bad, 10 normal, 15 good
+seq_length = 20  # results: 3 bad, 10 normal, 15 good
 epochs = 50
 batch_size = 32
+units = 30  # default = 50 but if 30 with 20 sequence there is a good training/validation
 
 # Create sequences and labels
 X, y = create_sequences(data_scaled, seq_length)
@@ -53,7 +58,7 @@ X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.
 
 # Build the LSTM model
 model = tf.keras.Sequential([
-    tf.keras.layers.LSTM(units=50, activation='relu', input_shape=(seq_length, 1)),
+    tf.keras.layers.LSTM(units=units, activation='relu', input_shape=(seq_length, 1)),
     tf.keras.layers.Dense(units=1)
 ])
 
