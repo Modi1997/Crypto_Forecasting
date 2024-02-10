@@ -20,11 +20,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 df = get_df("BTCUSDT", "4h", "60000h")
 # target, features
 coin_df, target, features = create_target_variable(df)
-
-# Assuming df is your DataFrame
 # Extract the 'Close' column for prediction
 data = df['Close'].values.reshape(-1, 1)
-
 # Normalize the data
 scaler = MinMaxScaler(feature_range=(0, 1))
 data_scaled = scaler.fit_transform(data)
@@ -71,7 +68,7 @@ history = model.fit(
     epochs=epochs,
     batch_size=batch_size,
     validation_data=(X_val, y_val),
-    verbose=1  # set to 0 for no training progress output
+    verbose=1
 )
 
 # Evaluate the model on the test set
@@ -98,8 +95,6 @@ df_plot = pd.DataFrame({
 fig = px.line(df_plot, x='Time', y=['Actual Close', 'Predicted Close'], title='LSTM Close Price Prediction',
               labels={'Time': 'Time', 'value': 'Close Price', 'variable': 'Type'})
 fig.update_layout(xaxis_title='Time', yaxis_title='Close Price', legend_title='Type', hovermode='x')
-
-# Show the plot
 fig.show()
 
 # Extract loss values from the history
