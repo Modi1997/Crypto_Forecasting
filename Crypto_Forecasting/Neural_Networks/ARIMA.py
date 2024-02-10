@@ -5,8 +5,8 @@ from sklearn.model_selection import ParameterGrid, TimeSeriesSplit
 from Data_Preparation.final_df import get_df
 import plotly.express as px
 import warnings
-warnings.filterwarnings('ignore')
 
+warnings.filterwarnings('ignore')
 
 # get close data
 df = get_df("BTCUSDT", "12h", "60000h")
@@ -53,11 +53,11 @@ print("RMSE:", rmse)
 
 # actual vs ARIMA prediction close values
 fig_arima = px.line(x=test.index,
-              y=[test['Close'], forecast],
-              labels={'x': 'Time', 'y': 'Close Price'},
-              title='ARIMA Forecast vs Actuals')
+                    y=[test['Close'], forecast],
+                    labels={'x': 'Time', 'y': 'Close Price'},
+                    title='ARIMA Forecast vs Actuals')
 fig_arima.update_layout(xaxis_title='Time',
-                  yaxis_title='Close Price',
-                  legend_title='Type',
-                  hovermode='x')
+                        yaxis_title='Close Price',
+                        legend_title='Type',
+                        hovermode='x')
 fig_arima.show()
