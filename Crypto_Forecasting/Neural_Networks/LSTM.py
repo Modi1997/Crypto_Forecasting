@@ -6,19 +6,22 @@ from Data_Preparation.final_df import get_df
 from Data_Preparation.subsets_and_target import create_target_variable
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 import numpy as np
+import plotly.express as px
+import pandas as pd
+import os
 import warnings
 
+# filtering tensorflow and general (alert) warnings
 warnings.filterwarnings('ignore')
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 
 # data
 df = get_df("BTCUSDT", "4h", "60000h")
 # target, features
 coin_df, target, features = create_target_variable(df)
-
-# Assuming df is your DataFrame
 # Extract the 'Close' column for prediction
 data = df['Close'].values.reshape(-1, 1)
-
 # Normalize the data
 scaler = MinMaxScaler(feature_range=(0, 1))
 data_scaled = scaler.fit_transform(data)
@@ -36,9 +39,10 @@ def create_sequences(data, seq_length):
 
 
 # Define hyperparameters
-seq_length = 15  # results: 3 bad, 10 normal, 15 good
-epochs = 70
+seq_length = 20  # results: 3 bad, 10 normal, 15 good
+epochs = 50
 batch_size = 32
+units = 30  # default = 50 but if 30 with 20 sequence there is a good training/validation
 
 # Create sequences and labels
 X, y = create_sequences(data_scaled, seq_length)
@@ -51,9 +55,9 @@ X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.
 
 # Build the LSTM model
 model = tf.keras.Sequential([
-    tf.keras.layers.LSTM(units=50, activation='relu', input_shape=(seq_length, 1)),
+    tf.keras.layers.LSTM(units=units, activation='relu', input_shape=(seq_length, 1)),
     tf.keras.layers.Dense(units=1)
-])
+    ])
 
 # Compile the model
 model.compile(optimizer='adam', loss='mean_squared_error')
@@ -64,8 +68,8 @@ history = model.fit(
     epochs=epochs,
     batch_size=batch_size,
     validation_data=(X_val, y_val),
-    verbose=1  # set to 0 for no training progress output
-)
+    verbose=1
+    )
 
 # Evaluate the model on the test set
 y_pred = model.predict(X_test)
@@ -80,16 +84,23 @@ rmse = np.sqrt(mean_squared_error(y_test_original, y_pred_original))
 print(f"Mean Absolute Error (MAE): {mae}")
 print(f"Root Mean Squared Error (RMSE): {rmse}")
 
-# Plot the actual vs. predicted values as a line chart
-plt.figure(figsize=(12, 6))
-plt.plot(df.index[-len(y_test):], y_test_original, label='Actual Close')
-plt.plot(df.index[-len(y_test):], y_pred_original, label='Predicted Close')
-plt.title('LSTM Close Price Prediction')
-plt.xlabel('Time')
-plt.ylabel('Close Price')
-plt.legend()
-plt.grid(True)  # Add grid for better visualization
-plt.show()
+# Create a DataFrame containing the actual and predicted values along with the corresponding timestamps
+df_plot = pd.DataFrame({
+    'Time': df.index[-len(y_test):],
+    'Actual Close': y_test_original.flatten(),
+    'Predicted Close': y_pred_original.flatten()
+    })
+
+# Create a line plot using Plotly Express
+fig_lstm = px.line(df_plot, x='Time',
+              y=['Actual Close', 'Predicted Close'],
+              title='LSTM Close Price Prediction',
+              labels={'Time': 'Time', 'value': 'Close Price', 'variable': 'Type'})
+fig_lstm.update_layout(xaxis_title='Time',
+                       yaxis_title='Close Price',
+                       legend_title='Type',
+                       hovermode='x')
+fig_lstm.show()
 
 # Extract loss values from the history
 train_loss = history.history['loss']
@@ -105,7 +116,3 @@ plt.ylabel('Loss')
 plt.legend()
 plt.grid(True)
 plt.show()
-
-# TODO hyperparameter tunning
-# testing mse/mae in different timeframes such as 1h 4h 12h...
-# add a frame to open a new tab for vizualisation
