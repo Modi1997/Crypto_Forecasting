@@ -12,60 +12,146 @@
             color: white;
             font-size: 1.1em;
         }
+        /* Style for the tabs */
+        .tab {
+            float: left;
+            border: 1px solid #ccc;
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+        .tab.active {
+            background-color: #555;
+        }
+        /* Style for the tab content */
+        .tabcontent {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            clear: both;
+        }
     </style>
 </head>
 <body>
-    <div>
-        <h1>Cryptocurrency Info</h1>
-        <form method="POST">
-            <label for="cryptocurrency_pair">Cryptocurrency Pair:</label>
-            <input type="text" id="cryptocurrency_pair" name="cryptocurrency_pair" required><br><br>
-            <label for="interval">Interval:</label>
-            <input type="text" id="interval" name="interval" required><br><br>
-            <label for="timeframe">Timeframe:</label>
-            <input type="text" id="timeframe" name="timeframe" required><br><br>
-            <input type="submit" value="Show Data">
-        </form>
+    <!-- Tab links -->
+    <div class="tab" id="chartsDataTab" onclick="openTab('chartsData')">Charts and Data</div>
+    <div class="tab" id="algoTradingTab" onclick="openTab('algoTrading')">Algorithmic Trading</div>
+
+    <!-- Content for Charts and Data tab -->
+    <div id="chartsData" class="tabcontent" style="display: block;">
+        <div style="position: relative; top: calc(-0.6cm);">
+            <h1>Cryptocurrency Info</h1>
+            <form method="POST">
+                <label for="cryptocurrency_pair">Cryptocurrency Pair:</label>
+                <input type="text" id="cryptocurrency_pair" name="cryptocurrency_pair" required><br><br>
+                <label for="interval">Interval:</label>
+                <input type="text" id="interval" name="interval" required><br><br>
+                <label for="timeframe">Timeframe:</label>
+                <input type="text" id="timeframe" name="timeframe" required><br><br>
+                <input type="submit" value="Show Data">
+            </form>
+        </div>
+        <div>
+            {% if plot %}
+                {{ plot|safe }}
+            {% else %}
+                <p>No data to display.</p>
+            {% endif %}
+        </div>
+        <div style="position: absolute; top: calc(10px + 1cm); right: 5%; max-width: 30%;">
+            <h1>Indicators</h1>
+            <p><b>MACD:</b> {{ macd_value }}</p>
+            <p><b>RSI:</b> {{ rsi_value }}</p>
+            <p><b>EMA:</b> {{ ema_value }}</p>
+        </div>
+        <div style="position: absolute; top: calc(10px + 0.9cm); left: 50%; transform: translateX(-50%); text-align: center;">
+            <h1>Signals & Prices</h1>
+            {% if signal1 %}
+                <p><b>AI Forecasting Evaluation</b>:
+                    {% if signal1[0] == 'BUY' %}
+                        <span style="color: #01fc01;"><b>{{ signal1[0] }}</b></span>
+                    {% elif signal1[0] == 'SELL' %}
+                        <span style="color: #ff3a3a;"><b>{{ signal1[0] }}</b></span>
+                    {% else %}
+                        <span style="color: #ffff44;"><b>{{ signal1[0] }}</b></span>
+                    {% endif %}
+                </p>
+            {% endif %}
+            {% if signal2 %}
+                <p><b>Technical Analysis Signal</b>:
+                    {% if signal2[0] == 'BUY' %}
+                        <span style="color: #01fc01;"><b>{{ signal2[0] }}</b></span>
+                    {% elif signal2[0] == 'SELL' %}
+                        <span style="color: #ff3a3a;"><b>{{ signal2[0] }}</b></span>
+                    {% else %}
+                        <span style="color: #ffff44;"><b>{{ signal2[0] }}</b></span>
+                    {% endif %}
+                </p>
+                <p style="background-color: #1f3ef5; padding: 2px 3px;"><b><span style="color: white;">Actual Close:</span></b> {{ y_test_original[-1][0] }}</p>
+                <p style="background-color: #f6770a; padding: 2px 3px;"><b><span style="color: white;">Forecast Close:</span></b> {{ y_pred_original[-1][0] }}</p>
+            {% endif %}
+        </div>
     </div>
-    <div>
-        {% if plot %}
-            {{ plot|safe }}
-        {% else %}
-            <p>No data to display.</p>
-        {% endif %}
+
+<!-- Content for Algorithmic Trading tab -->
+    <div id="algoTrading" class="tabcontent">
+        <div>
+            <h1>Login</h1>
+            <form method="POST" id="login">
+                <label for="api_key">API Key User:</label>
+                <input type="text" id="api_key" name="api_key" required><br><br>
+                <label for="api_secret">Secret Password:</label>
+                <input type="text" id="api_secret" name="api_secret" required><br><br>
+                <input type="submit" value="Login">
+            </form>
+        </div>
+        <div id="accountInfo">
+            <!-- Account information will be displayed here -->
+        </div>
     </div>
-    <div style="position: absolute; top: 10px; right: 5%; max-width: 30%;">
-        <h1>Indicators</h1>
-        <p><b>MACD:</b> {{ macd_value }}</p>
-        <p><b>RSI:</b> {{ rsi_value }}</p>
-        <p><b>EMA:</b> {{ ema_value }}</p>
-    </div>
-    <div style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); text-align: center;">
-        <h1>Signals</h1>
-        {% if signal1 %}
-            <p>AI Forecasting Evaluation:
-                {% if signal1[0] == 'BUY' %}
-                    <span style="color: #01fc01;"><b>{{ signal1[0] }}</b></span>
-                {% elif signal1[0] == 'SELL' %}
-                    <span style="color: #ff3a3a;"><b>{{ signal1[0] }}</b></span>
-                {% else %}
-                    <span style="color: #ffff44;"><b>{{ signal1[0] }}</b></span>
-                {% endif %}
-            </p>
-        {% endif %}
-        {% if signal2 %}
-            <p>Technical Analysis Signal:
-                {% if signal2[0] == 'BUY' %}
-                    <span style="color: #01fc01;"><b>{{ signal2[0] }}</b></span>
-                {% elif signal2[0] == 'SELL' %}
-                    <span style="color: #ff3a3a;"><b>{{ signal2[0] }}</b></span>
-                {% else %}
-                    <span style="color: #ffff44;"><b>{{ signal2[0] }}</b></span>
-                {% endif %}
-            </p>
-            <p>Actual Close: <span style="color: #1f3ef5;"><b>{{ y_test_original[-1] }}</b></span></p>
-            <p>Forecast Close: <span style="color: #f6770a;"><b>{{ y_pred_original[-1] }}</b></span></p>
-        {% endif %}
-    </div>
+
+    <!-- Script to open the tab -->
+    <script>
+        function openTab(tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tab");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            event.currentTarget.className += " active";
+        }
+
+    // Function to handle form submission
+    document.getElementById('login').addEventListener('submit', function(event) {
+        event.preventDefault();
+        var formData = new FormData();
+        formData.append('api_key', document.getElementById('api_key').value);
+        formData.append('api_secret', document.getElementById('api_secret').value);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/login', true);
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                var accountInfo = JSON.parse(xhr.responseText);
+                var accountInfoHtml = '<h2>Account Information</h2><ul>';
+                accountInfo.forEach(function(asset) {
+                    accountInfoHtml += '<li>' + asset.asset + ': ' + asset.free + '</li>';
+                });
+                accountInfoHtml += '</ul>';
+                document.getElementById('accountInfo').innerHTML = accountInfoHtml;
+            } else {
+                console.error('Failed to fetch account information');
+            }
+        };
+        xhr.send(formData);
+    });
+    </script>
 </body>
 </html>

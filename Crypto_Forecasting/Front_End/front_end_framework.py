@@ -6,8 +6,26 @@ from sklearn.model_selection import train_test_split
 import plotly.express as px
 import pandas as pd
 import tensorflow as tf
+from binance.client import Client
+from flask import jsonify
 
 app = Flask(__name__)
+
+# api_key = 'siP2VBOq44rbgvHfnfWomRb4dcDY7QbVNwAxauetYXGsG9rqCg7YODo3Cn5I57KS'
+# api_secret = 'fwgN7NuEXn8hgpBkjVsGs8sYCyqcWRWFv1OkC7jqAepQLLJ5Tehs3vKmifHD7jaS'
+@app.route('/login', methods=['POST'])
+def login():
+        api_key = request.form['api_key']
+        api_secret = request.form['api_secret']
+        client = Client(api_key, api_secret)
+        client_account = client.get_account()
+        account_info = client_account["balances"]
+        def balance_free() -> object:
+            for balance in account_info:
+                if balance["free"] not in ('0.0', '0.00', '0.00000000'):
+                    print(balance)
+            return ''
+        return balance_free()
 
 
 def create_sequences(data, seq_length):
@@ -57,7 +75,7 @@ def generate_plot(y_test_original, y_pred_original, df_index, currency_pair):
     # Update title position
     fig.update_layout(title_x=0.5)
     # Increase the height of the chart
-    fig.update_layout(height=600)
+    fig.update_layout(height=540)
     return fig
 
 
