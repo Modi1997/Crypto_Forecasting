@@ -55,7 +55,9 @@ print("RMSE:", rmse)
 fig_arima = px.line(x=test.index,
                     y=[test['Close'], forecast],
                     labels={'x': 'Time', 'y': 'Close Price'},
-                    title='ARIMA Forecast vs Actuals')
+                    title='ARIMA Forecast vs Actual')
+fig_arima.update_traces(name='Actual', selector=dict(name='wide_variable_0'))
+fig_arima.update_traces(name='Forecast', selector=dict(name='wide_variable_1'))
 fig_arima.update_layout(xaxis_title='Time',
                         yaxis_title='Close Price',
                         legend_title='Type',

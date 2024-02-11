@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cryptocurrency Prediction</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            background-image: url('https://assets.bizclikmedia.net/900/7baa550adbe9cea034f691b370c77349:7db5fbedd9293236e737c494c7ceeaba/gettyimages-1093930098-2520-25283-2529-jpeg.webp');
+            background-size: cover;
+            color: white;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>Cryptocurrency Info</h1>
+        <form method="POST">
+            <label for="cryptocurrency_pair">Cryptocurrency Pair:</label>
+            <input type="text" id="cryptocurrency_pair" name="cryptocurrency_pair" required><br><br>
+            <label for="interval">Interval:</label>
+            <input type="text" id="interval" name="interval" required><br><br>
+            <label for="timeframe">Timeframe:</label>
+            <input type="text" id="timeframe" name="timeframe" required><br><br>
+            <input type="submit" value="Show Data">
+        </form>
+    </div>
+    <div>
+        {% if plot %}
+            {{ plot|safe }}
+        {% else %}
+            <p>No data to display.</p>
+        {% endif %}
+    </div>
+    <div style="position: absolute; top: 10px; right: 5%; max-width: 30%;">
+        <h1>Indicators</h1>
+        <p><b>MACD:</b> {{ macd_value }}</p>
+        <p><b>RSI:</b> {{ rsi_value }}</p>
+        <p><b>EMA:</b> {{ ema_value }}</p>
+    </div>
+    <div style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); text-align: center;">
+        <h1>Signals</h1>
+        {% if signal1 %}
+            <p>AI Forecasting Evaluation:
+                {% if signal1[0] == 'BUY' %}
+                    <span style="color: #01fc01;"><b>{{ signal1[0] }}</b></span>
+                {% elif signal1[0] == 'SELL' %}
+                    <span style="color: #ff3a3a;"><b>{{ signal1[0] }}</b></span>
+                {% else %}
+                    <span style="color: #ffff44;"><b>{{ signal1[0] }}</b></span>
+                {% endif %}
+            </p>
+        {% endif %}
+        {% if signal2 %}
+            <p>Technical Analysis Signal:
+                {% if signal2[0] == 'BUY' %}
+                    <span style="color: #01fc01;"><b>{{ signal2[0] }}</b></span>
+                {% elif signal2[0] == 'SELL' %}
+                    <span style="color: #ff3a3a;"><b>{{ signal2[0] }}</b></span>
+                {% else %}
+                    <span style="color: #ffff44;"><b>{{ signal2[0] }}</b></span>
+                {% endif %}
+            </p>
+            <p>Actual Close: <span style="color: #1f3ef5;"><b>{{ y_test_original[-1] }}</b></span></p>
+            <p>Forecast Close: <span style="color: #f6770a;"><b>{{ y_pred_original[-1] }}</b></span></p>
+        {% endif %}
+    </div>
+</body>
+</html>
