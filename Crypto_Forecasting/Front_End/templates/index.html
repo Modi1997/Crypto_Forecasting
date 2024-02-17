@@ -35,8 +35,7 @@
         #accountInfo {
             position: absolute;
             top: 70px;
-            right: 100px;
-            font-size: 30px;
+            right: 140px;
             padding: 10px;
         }
     </style>
@@ -102,18 +101,16 @@
         </div>
     </div>
 
-<!-- Content for Algorithmic Trading tab -->
+    <!-- Content for Algorithmic Trading tab -->
     <div id="algoTrading" class="tabcontent">
-        <div>
-            <h1>Login</h1>
-            <form method="POST" id="login">
-                <label for="api_key">API Key User:</label>
-                <input type="text" id="api_key" name="api_key" required><br><br>
-                <label for="api_secret">Secret Password:</label>
-                <input type="text" id="api_secret" name="api_secret" required><br><br>
-                <input type="submit" value="Login">
-            </form>
-        </div>
+        <h1>Login</h1>
+        <form method="POST" id="login">
+            <label for="api_key">API Key User:</label>
+            <input type="text" id="api_key" name="api_key" required><br><br>
+            <label for="api_secret">Secret Password:</label>
+            <input type="text" id="api_secret" name="api_secret" required><br><br>
+            <input type="submit" value="Login">
+        </form>
         <!-- Display account balances here -->
         <div id="accountInfo">
         </div>
@@ -149,12 +146,12 @@
                 if (xhr.status === 200) {
                     var accountInfo = JSON.parse(xhr.responseText);
                     console.log(accountInfo); // Log the received data
-                    var accountInfoHtml = '<h3>Account Balances</h3><ul>';
+                    var accountInfoHtml = '<h1 style="margin-bottom: 2px;">Account Balances</h1><ul>';
                     accountInfo.forEach(function(asset) {
                         var parts = asset.split(" : ");
                         var assetName = parts[0];
                         var assetFree = parts[1];
-                    accountInfoHtml += '<li><span style="background-color: #344224; padding: 3px; border-radius: 5px; font-size: 22px;">' + assetName + '</span>: <span style="background-color: #588800; padding: 3px; border-radius: 5px; font-size: 22px;">' + assetFree + '</span></li>';
+                    accountInfoHtml += '<li><span style="background-color: #2100c0; padding: 3px; border-radius: 5px; font-size: 20px; margin-right: 12px">' + assetName + '</span>: <span style="background-color: #0f4efa; padding: 3px; border-radius: 5px; font-size: 20px">' + assetFree + '</span></li>';
                     });
                     accountInfoHtml += '</ul>';
                     document.getElementById('accountInfo').innerHTML = accountInfoHtml;
