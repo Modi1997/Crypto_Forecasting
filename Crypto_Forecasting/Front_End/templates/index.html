@@ -32,6 +32,13 @@
             border: 1px solid #ccc;
             clear: both;
         }
+        #accountInfo {
+            position: absolute;
+            top: 70px;
+            right: 100px;
+            font-size: 30px;
+            padding: 10px;
+        }
     </style>
 </head>
 <body>
@@ -107,8 +114,8 @@
                 <input type="submit" value="Login">
             </form>
         </div>
+        <!-- Display account balances here -->
         <div id="accountInfo">
-            <!-- Account information will be displayed here -->
         </div>
     </div>
 
@@ -128,30 +135,35 @@
             event.currentTarget.className += " active";
         }
 
-    // Function to handle form submission
-    document.getElementById('login').addEventListener('submit', function(event) {
-        event.preventDefault();
-        var formData = new FormData();
-        formData.append('api_key', document.getElementById('api_key').value);
-        formData.append('api_secret', document.getElementById('api_secret').value);
+        // Function to handle form submission
+        document.getElementById('login').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var formData = new FormData();
+            formData.append('api_key', document.getElementById('api_key').value);
+            formData.append('api_secret', document.getElementById('api_secret').value);
 
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/login', true);
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                var accountInfo = JSON.parse(xhr.responseText);
-                var accountInfoHtml = '<h2>Account Information</h2><ul>';
-                accountInfo.forEach(function(asset) {
-                    accountInfoHtml += '<li>' + asset.asset + ': ' + asset.free + '</li>';
-                });
-                accountInfoHtml += '</ul>';
-                document.getElementById('accountInfo').innerHTML = accountInfoHtml;
-            } else {
-                console.error('Failed to fetch account information');
-            }
-        };
-        xhr.send(formData);
-    });
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/login', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var accountInfo = JSON.parse(xhr.responseText);
+                    console.log(accountInfo); // Log the received data
+                    var accountInfoHtml = '<h3>Account Balances</h3><ul>';
+                    accountInfo.forEach(function(asset) {
+                        var parts = asset.split(" : ");
+                        var assetName = parts[0];
+                        var assetFree = parts[1];
+                    accountInfoHtml += '<li><span style="background-color: #344224; padding: 3px; border-radius: 5px; font-size: 22px;">' + assetName + '</span>: <span style="background-color: #588800; padding: 3px; border-radius: 5px; font-size: 22px;">' + assetFree + '</span></li>';
+                    });
+                    accountInfoHtml += '</ul>';
+                    document.getElementById('accountInfo').innerHTML = accountInfoHtml;
+                } else {
+                    console.error('Failed to fetch account information');
+                }
+            };
+            xhr.send(new URLSearchParams(formData));
+        });
     </script>
 </body>
 </html>

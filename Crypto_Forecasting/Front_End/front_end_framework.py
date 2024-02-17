@@ -20,12 +20,12 @@ def login():
         client = Client(api_key, api_secret)
         client_account = client.get_account()
         account_info = client_account["balances"]
-        def balance_free() -> object:
-            for balance in account_info:
-                if balance["free"] not in ('0.0', '0.00', '0.00000000'):
-                    print(balance)
-            return ''
-        return balance_free()
+        balances = []
+        for balance in account_info:
+            if float(balance["free"]) > 0:
+                balances.append(f"{balance['asset']} : {balance['free']}")
+        print(balances)
+        return jsonify(balances)
 
 
 def create_sequences(data, seq_length):

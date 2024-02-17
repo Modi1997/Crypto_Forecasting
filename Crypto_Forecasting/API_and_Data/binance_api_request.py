@@ -27,5 +27,5 @@ def balance_free() -> object:
 
     for balance in account_info:
         if balance["free"] not in ('0.0', '0.00', '0.00000000'):
-            print(balance)
+            print(f"{balance['asset']} : {balance['free']}")
     return ''
