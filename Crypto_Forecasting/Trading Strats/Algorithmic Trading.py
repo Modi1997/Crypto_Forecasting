@@ -3,7 +3,7 @@ from API_and_Data.get_live_data import get_data
 from Data_Preparation.technical_indicators import *
 
 
-def trading_strategy(symbol: str, qty: int, entried=False):
+def strategy(symbol: str, qty: int, entried=False):
     """
     This function gets a symbol its quantity and based on the trading strategy creates an order (BUY) and afterward
     closes (SELL) this order. It will also display information such as the market price, market fees you paid,
@@ -71,12 +71,58 @@ def trading_strategy(symbol: str, qty: int, entried=False):
                     break
 
 
-# time of Modi_Bot started
+def trading_strategy(symbol: str, qty: int, entried=False):
+    """
+    This is an EMA algorithmic trading strategy where we are following the trend (downtrend/uptrend)
+
+    :param symbol: pair symbol such as BTCUSDT
+    :param qty: quantity we wish to trade
+    :param entried: determines whether you have a LONG position or not
+    :return: information of the BUY or SELL trade
+    """
+
+    df = get_data(symbol, '1m', '3m')
+    ema = EMA(symbol, '1m', '50h')
+
+    if not entried:
+        if ema <= df['close'][-1]:
+            order = client.create_order(symbol=symbol,
+                                        side='BUY',
+                                        type='MARKET',
+                                        quantity=qty)
+            now = datetime.now()
+            dt_string = now.strftime("%d/%m %H:%M:%S")
+            order_info = {
+                'Symbol': order['symbol'],
+                'Quantity': order['origQty'],
+                'Price': order['fills'][0]['price']
+            }
+            print(dt_string, '\n', order_info)
+            entried = True
+
+    if entried:
+        while True:
+            if ema > df['close'][-1]:
+                order = client.create_order(symbol=symbol,
+                                            side='SELL',
+                                            type='MARKET',
+                                            quantity=qty)
+                now = datetime.now()
+                dt_string = now.strftime("%d/%m %H:%M:%S")
+                order_info = {
+                    'Symbol': order['symbol'],
+                    'Quantity': order['origQty'],
+                    'Price': order['fills'][0]['price']
+                }
+                print(dt_string, '\n', order_info)
+                break
+
+
 now = datetime.now()
 dt_string = now.strftime("%d/%m %H:%M:%S")
-print("Time Modi_Bot started:", dt_string)
+print("Algorithmic Trading started at: ", dt_string)
 
-# run the algo to check for orders every X (sleep) seconds
+# Order every X seconds
 while True:
-    trading_strategy('CTSIUSDT', 10)
+    trading_strategy('ADAUSDT', 9)
     time.sleep(30)

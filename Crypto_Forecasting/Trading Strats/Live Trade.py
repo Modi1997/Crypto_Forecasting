@@ -15,4 +15,13 @@ def open_position(symbol: str, side: str, qty: int):
                                 side=side,
                                 type='MARKET',
                                 quantity=qty)
-    return order
+    order_info = {
+        'Symbol': order['symbol'],
+        'Quantity': order['origQty'],
+        'Price': order['fills'][0]['price']
+    }
+    print(order_info)
+    return order_info
+
+
+#open_position('ADAUSDT', 'BUY', 9)
