@@ -1,4 +1,7 @@
 from datetime import datetime, time
+import time
+import now
+
 from API_and_Data.get_live_data import get_data
 from Data_Preparation.technical_indicators import *
 
@@ -82,10 +85,10 @@ def trading_strategy(symbol: str, qty: int, entried=False):
     """
 
     df = get_data(symbol, '1m', '3m')
-    ema = EMA(symbol, '1m', '50h')
+    ema = EMA(frame(symbol, '1m', '50h'))
 
     if not entried:
-        if ema <= df['close'][-1]:
+        if (ema[-1] <= df['Close'].iloc[-1]).all():
             order = client.create_order(symbol=symbol,
                                         side='BUY',
                                         type='MARKET',
@@ -102,7 +105,7 @@ def trading_strategy(symbol: str, qty: int, entried=False):
 
     if entried:
         while True:
-            if ema > df['close'][-1]:
+            if (ema > df['Close'].iloc[-1]).all():
                 order = client.create_order(symbol=symbol,
                                             side='SELL',
                                             type='MARKET',
@@ -118,11 +121,11 @@ def trading_strategy(symbol: str, qty: int, entried=False):
                 break
 
 
-now = datetime.now()
-dt_string = now.strftime("%d/%m %H:%M:%S")
-print("Algorithmic Trading started at: ", dt_string)
-
-# Order every X seconds
-while True:
-    trading_strategy('ADAUSDT', 9)
-    time.sleep(30)
+# now = datetime.now()
+# dt_string = now.strftime("%d/%m %H:%M:%S")
+# print("Algorithmic Trading started at: ", dt_string)
+#
+# # Order every X seconds
+# while True:
+#     trading_strategy('ADAUSDT', 9)
+#     time.sleep(30)

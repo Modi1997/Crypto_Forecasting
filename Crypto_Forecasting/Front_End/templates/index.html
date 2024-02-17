@@ -12,7 +12,7 @@
             color: white;
             font-size: 1.1em;
         }
-        /* Style for the tabs */
+
         .tab {
             float: left;
             border: 1px solid #ccc;
@@ -25,7 +25,11 @@
         .tab.active {
             background-color: #555;
         }
-        /* Style for the tab content */
+
+        #login {
+            left: 150px;
+        }
+
         .tabcontent {
             display: none;
             padding: 20px;
@@ -34,10 +38,24 @@
         }
         #accountInfo {
             position: absolute;
-            top: 70px;
-            right: 140px;
+            top: 60px;
+            right: 200px;
             padding: 10px;
         }
+
+        #tradingHistory {
+            position: absolute;
+            bottom: 500px;
+            right: 600px;
+        }
+
+        #liveTrading {
+            position: absolute;
+            bottom: 405px;
+            left: 30px;
+        }
+
+
     </style>
 </head>
 <body>
@@ -111,8 +129,31 @@
             <input type="text" id="api_secret" name="api_secret" required><br><br>
             <input type="submit" value="Login">
         </form>
+
         <!-- Display account balances here -->
         <div id="accountInfo">
+        </div>
+
+        <!-- Live Trading Section -->
+        <div id="liveTrading">
+            <h1>Live Trading</h1>
+            <form id="tradingForm">
+                <label for="symbol">Cryptocurrency Pair Symbol:</label>
+                <input type="text" id="symbol" name="symbol" required><br><br>
+                <label for="quantity">Symbol Quantity to Trade:</label>
+                <input type="number" id="quantity" name="quantity" required><br><br>
+                <button type="button" onclick="startAlgorithmicTrading()">Start Algorithmic Trading</button>
+            </form>
+        </div>
+
+        <!-- Trading History Section -->
+        <div id="tradingHistory">
+            <h1>Trading History</h1>
+            <ul>
+                {% for message in trading_history %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
         </div>
     </div>
 
@@ -160,6 +201,53 @@
                 }
             };
             xhr.send(new URLSearchParams(formData));
+        });
+            // Function to update the trading history list
+        function startAlgorithmicTrading() {
+            var symbol = document.getElementById('symbol').value;
+            var quantity = document.getElementById('quantity').value;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/start_algorithmic_trading', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        console.log('Algorithmic trading started successfully.');
+                    } else {
+                        console.error('Error starting algorithmic trading:', xhr.responseText);
+                    }
+                }
+            };
+            xhr.send('symbol=' + encodeURIComponent(symbol) + '&quantity=' + encodeURIComponent(quantity));
+        }
+
+        document.getElementById('startTradingButton').addEventListener('click', startAlgorithmicTrading);
+    </script>
+    <!-- Include jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            function updateTradingHistory() {
+                $.ajax({
+                    type: "GET",
+                    url: "/get_trading_history",
+                    success: function(data) {
+                        $('#historyList').html('');
+                        $.each(data.history, function(index, message) {
+                            $('#historyList').append('<li>' + message + '</li>');
+                        });
+                    },
+                    complete: function() {
+                        // Schedule the next update after 15 seconds
+                        setTimeout(updateTradingHistory, 15000);
+                    }
+                });
+            }
+
+            // Initial call to updateTradingHistory
+            updateTradingHistory();
         });
     </script>
 </body>

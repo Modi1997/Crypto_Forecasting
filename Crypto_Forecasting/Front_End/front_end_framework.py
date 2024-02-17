@@ -1,18 +1,80 @@
+import pandas as pd
 import numpy as np
+import plotly.express as px
+import tensorflow as tf
+from datetime import datetime
+import time
+
 from flask import Flask, render_template, request
 from Data_Preparation.final_df import get_df
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
-import plotly.express as px
-import pandas as pd
-import tensorflow as tf
 from binance.client import Client
 from flask import jsonify
+from Trading_Strats.Algorithmic_Trading import trading_strategy
+from API_and_Data.get_live_data import get_data
+from Data_Preparation.technical_indicators import *
 
 app = Flask(__name__)
 
 # api_key = 'siP2VBOq44rbgvHfnfWomRb4dcDY7QbVNwAxauetYXGsG9rqCg7YODo3Cn5I57KS'
 # api_secret = 'fwgN7NuEXn8hgpBkjVsGs8sYCyqcWRWFv1OkC7jqAepQLLJ5Tehs3vKmifHD7jaS'
+
+
+trading_history = []
+def trading_strategy(symbol: str, qty: int, entried=False):
+    """
+    This is an EMA algorithmic trading strategy where we are following the trend (downtrend/uptrend)
+
+    :param symbol: pair symbol such as BTCUSDT
+    :param qty: quantity we wish to trade
+    :param entried: determines whether you have a LONG position or not
+    :return: information of the BUY or SELL trade
+    """
+
+    df = get_data(symbol, '1m', '3m')
+    ema = EMA(frame(symbol, '1m', '50h'))
+
+    if not entried:
+        if (ema[-1] <= df['Close'].iloc[-1]).all():
+            order = client.create_order(symbol=symbol,
+                                        side='BUY',
+                                        type='MARKET',
+                                        quantity=qty)
+            now = datetime.now()
+            dt_string = now.strftime("%d/%m %H:%M:%S")
+            order_info = {
+                'Symbol': order['symbol'],
+                'Position': order['side'],
+                'Quantity': order['origQty'],
+                'Price': order['fills'][0]['price']
+            }
+            print(dt_string, '\n', order_info)
+            message = f"{dt_string}\n{order_info}"
+            trading_history.append(message)
+            entried = True
+
+    if entried:
+        while True:
+            if (ema > df['Close'].iloc[-1]).all():
+                order = client.create_order(symbol=symbol,
+                                            side='SELL',
+                                            type='MARKET',
+                                            quantity=qty)
+                now = datetime.now()
+                dt_string = now.strftime("%d/%m %H:%M:%S")
+                order_info = {
+                    'Symbol': order['symbol'],
+                    'Position': order['side'],
+                    'Quantity': order['origQty'],
+                    'Price': order['fills'][0]['price']
+                }
+                print(dt_string, '\n', order_info)
+                message = f"{dt_string}\n{order_info}"
+                trading_history.append(message)
+                break
+
+
 @app.route('/login', methods=['POST'])
 def login():
         api_key = request.form['api_key']
@@ -28,6 +90,16 @@ def login():
         return jsonify(balances)
 
 
+@app.route('/start_algorithmic_trading', methods=['POST'])
+def start_algorithmic_trading():
+    symbol = request.form['symbol']
+    qty = int(request.form['quantity'])
+
+    while True:
+        trading_strategy(symbol, qty)
+        time.sleep(30)
+
+
 def create_sequences(data, seq_length):
     sequences, labels = [], []
     for i in range(len(data) - seq_length):
@@ -36,6 +108,7 @@ def create_sequences(data, seq_length):
         sequences.append(seq)
         labels.append(label)
     return np.array(sequences), np.array(labels)
+
 
 # Function to generate the plotly chart
 def calculate_signals(y_pred_original, y_test_original, macd_value, ema_value):
@@ -120,7 +193,12 @@ def index():
                                ema_value=ema_value, signal1=signal1, signal2=signal2, y_test_original=y_test_original,
                                y_pred_original=y_pred_original)
 
-    return render_template('index.html', plot=None)
+    return render_template('index.html', trading_history=trading_history, plot=None)
+
+
+@app.route('/get_trading_history')
+def get_trading_history():
+    return jsonify({'history': trading_history})
 
 
 if __name__ == '__main__':
