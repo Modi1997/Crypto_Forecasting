@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cryptocurrency Prediction</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            background-image: url('https://assets.bizclikmedia.net/900/7baa550adbe9cea034f691b370c77349:7db5fbedd9293236e737c494c7ceeaba/gettyimages-1093930098-2520-25283-2529-jpeg.webp');
+            background-size: cover;
+            color: white;
+            font-size: 1.1em;
+        }
+
+        .tab {
+            float: left;
+            border: 1px solid #ccc;
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+        .tab.active {
+            background-color: #555;
+        }
+
+        #login {
+            left: 150px;
+        }
+
+        .tabcontent {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            clear: both;
+        }
+        #accountInfo {
+            position: absolute;
+            top: 60px;
+            right: 230px;
+            padding: 10px;
+        }
+
+        #tradingHistory {
+            position: absolute;
+            bottom: 520px;
+            right: 700px;
+        }
+
+        #tradingHistoryList {
+            position: absolute;
+            top: 90px;
+            bottom: 0;
+            left: 0;
+            width: 340%;
+            height: calc(500% - 5px);
+            overflow-y: auto;
+            padding: 0;
+            margin: 0;
+        }
+
+        #liveTrading {
+            position: absolute;
+            bottom: 405px;
+            left: 30px;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Tab links -->
+    <div class="tab" id="chartsDataTab" onclick="openTab('chartsData')">Charts and Data</div>
+    <div class="tab" id="algoTradingTab" onclick="openTab('algoTrading')">Algorithmic Trading</div>
+
+    <!-- Content for Charts and Data tab -->
+    <div id="chartsData" class="tabcontent" style="display: block;">
+        <div style="position: relative; top: calc(-0.6cm);">
+            <h1>Cryptocurrency Info</h1>
+            <form method="POST" id="cryptocurrencyInfoForm">
+                <label for="cryptocurrency_pair">Cryptocurrency Pair:</label>
+                <input type="text" id="cryptocurrency_pair" name="cryptocurrency_pair" required><br><br>
+                <label for="interval">Interval:</label>
+                <input type="text" id="interval" name="interval" required><br><br>
+                <label for="timeframe">Timeframe:</label>
+                <input type="text" id="timeframe" name="timeframe" required><br><br>
+                <input type="submit" value="Show Data">
+            </form>
+        </div>
+        <div>
+            {% if plot %}
+                {{ plot|safe }}
+            {% else %}
+                <p>No data to display.</p>
+            {% endif %}
+        </div>
+        <div style="position: absolute; top: calc(10px + 1cm); right: 5%; max-width: 30%;">
+            <h1>Indicators</h1>
+            <p><b>MACD:</b> {{ macd_value }}</p>
+            <p><b>RSI:</b> {{ rsi_value }}</p>
+            <p><b>EMA:</b> {{ ema_value }}</p>
+        </div>
+        <div style="position: absolute; top: calc(10px + 0.9cm); left: 50%; transform: translateX(-50%); text-align: center;">
+            <h1>Signals & Prices</h1>
+            {% if signal1 %}
+                <p><b>AI Forecasting Evaluation</b>:
+                    {% if signal1[0] == 'BUY' %}
+                        <span style="color: #01fc01;"><b>{{ signal1[0] }}</b></span>
+                    {% elif signal1[0] == 'SELL' %}
+                        <span style="color: #ff3a3a;"><b>{{ signal1[0] }}</b></span>
+                    {% else %}
+                        <span style="color: #ffff44;"><b>{{ signal1[0] }}</b></span>
+                    {% endif %}
+                </p>
+            {% endif %}
+            {% if signal2 %}
+                <p><b>Technical Analysis Signal</b>:
+                    {% if signal2[0] == 'BUY' %}
+                        <span style="color: #01fc01;"><b>{{ signal2[0] }}</b></span>
+                    {% elif signal2[0] == 'SELL' %}
+                        <span style="color: #ff3a3a;"><b>{{ signal2[0] }}</b></span>
+                    {% else %}
+                        <span style="color: #ffff44;"><b>{{ signal2[0] }}</b></span>
+                    {% endif %}
+                </p>
+                <p style="background-color: #1f3ef5; padding: 2px 3px;"><b><span style="color: white;">Actual Close:</span></b> {{ y_test_original[-1][0] }}</p>
+                <p style="background-color: #f6770a; padding: 2px 3px;"><b><span style="color: white;">Forecast Close:</span></b> {{ y_pred_original[-1][0] }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Content for Algorithmic Trading tab -->
+    <div id="algoTrading" class="tabcontent">
+        <h1>Login</h1>
+        <form method="POST" id="login">
+            <label for="api_key">API Key User:</label>
+            <input type="text" id="api_key" name="api_key" required><br><br>
+            <label for="api_secret">Secret Password:</label>
+            <input type="text" id="api_secret" name="api_secret" required><br><br>
+            <input type="submit" value="Login">
+        </form>
+
+        <!-- Display account balances here -->
+        <div id="accountInfo">
+        </div>
+
+        <!-- Live Trading Section -->
+        <div id="liveTrading">
+            <h1>Live Trading</h1>
+            <form method="POST" id="tradingForm">
+                <label for="symbol">Cryptocurrency Pair Symbol:</label>
+                <input type="text" id="symbol" name="symbol" required><br><br>
+                <label for="quantity">Symbol Quantity to Trade:</label>
+                <input type="number" id="quantity" name="quantity" required><br><br>
+                <input type="submit" value="Start Algorithmic Trading">
+            </form>
+        </div>
+
+        <!-- Trading History Section -->
+        <div id="tradingHistory">
+            <h1>Trading History</h1>
+            <ul id="tradingHistoryList">
+                <!-- Trading history items will be inserted here dynamically -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Script to open the tab -->
+    <script>
+        function openTab(tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tab");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            event.currentTarget.className += " active";
+        }
+
+        // Function to handle form submission
+        document.getElementById('login').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var formData = new FormData();
+            formData.append('api_key', document.getElementById('api_key').value);
+            formData.append('api_secret', document.getElementById('api_secret').value);
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/login', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var accountInfo = JSON.parse(xhr.responseText);
+                    console.log(accountInfo); // Log the received data
+                    var accountInfoHtml = '<h1 style="margin-bottom: 2px;">Account Balances</h1><ul>';
+                    accountInfo.forEach(function(asset) {
+                        var parts = asset.split(" : ");
+                        var assetName = parts[0];
+                        var assetFree = parts[1];
+                    accountInfoHtml += '<li><span style="background-color: #2100c0; padding: 3px; border-radius: 5px; font-size: 20px; margin-right: 12px">' + assetName + '</span>: <span style="background-color: #0f4efa; padding: 3px; border-radius: 5px; font-size: 20px">' + assetFree + '</span></li>';
+                    });
+                    accountInfoHtml += '</ul>';
+                    document.getElementById('accountInfo').innerHTML = accountInfoHtml;
+                } else {
+                    console.error('Failed to fetch account information');
+                }
+            };
+            xhr.send(new URLSearchParams(formData));
+        });
+
+        // Function to algorithmic trading
+        document.getElementById('tradingForm').addEventListener('submit', function(event) {
+            // Prevent default form submission behavior
+            event.preventDefault();
+
+            var symbol = document.getElementById('symbol').value;
+            var quantity = document.getElementById('quantity').value;
+            var encodedSymbol = encodeURIComponent(symbol);
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/start_algorithmic_trading', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        console.log('Algorithmic trading started successfully.');
+                    } else {
+                        console.error('Error starting algorithmic trading:', xhr.responseText);
+                    }
+                }
+            };
+            xhr.send('symbol=' + encodedSymbol + '&quantity=' + encodeURIComponent(quantity));
+        });
+
+    </script>
+
+    <script>
+        function fetchTradingHistory() {
+            fetch('/get_trading_history')
+                .then(response => response.json())
+                .then(data => {
+                    const tradingHistoryList = document.getElementById('tradingHistoryList');
+                    tradingHistoryList.innerHTML = ''; // Clear previous content
+                    data.forEach(message => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = message;
+
+                        // Apply different background colors based on content
+                        if (message.includes('Algorithmic Trading Started')) {
+                            listItem.style.backgroundColor = 'grey';
+                            listItem.style.fontWeight = 'bold';
+                            listItem.style.color = 'black';
+                            listItem.style.fontSize = '20px';
+                        } else if (message.includes('BUY')) {
+                            listItem.style.backgroundColor = 'green';
+                        } else if (message.includes('SELL')) {
+                            listItem.style.backgroundColor = 'red';
+                        }
+
+                        tradingHistoryList.appendChild(listItem);
+                    });
+                })
+                .catch(error => console.error('Error fetching trading history:', error));
+        }
+
+        // Fetch trading history initially when the page loads
+        fetchTradingHistory();
+
+        // Refresh trading history every 60 seconds
+        setInterval(fetchTradingHistory, 60000);
+    </script>
+</body>
+</html>
