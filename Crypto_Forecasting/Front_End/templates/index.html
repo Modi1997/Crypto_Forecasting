@@ -39,14 +39,26 @@
         #accountInfo {
             position: absolute;
             top: 60px;
-            right: 200px;
+            right: 230px;
             padding: 10px;
         }
 
         #tradingHistory {
             position: absolute;
-            bottom: 500px;
-            right: 600px;
+            bottom: 520px;
+            right: 650px;
+        }
+
+        #tradingHistoryList {
+            position: absolute;
+            top: 90px;
+            bottom: 0;
+            left: 0;
+            width: 340%;
+            height: calc(500% - 5px);
+            overflow-y: auto;
+            padding: 0;
+            margin: 0;
         }
 
         #liveTrading {
@@ -54,7 +66,6 @@
             bottom: 405px;
             left: 30px;
         }
-
 
     </style>
 </head>
@@ -67,7 +78,7 @@
     <div id="chartsData" class="tabcontent" style="display: block;">
         <div style="position: relative; top: calc(-0.6cm);">
             <h1>Cryptocurrency Info</h1>
-            <form method="POST">
+            <form method="POST" id="cryptocurrencyInfoForm">
                 <label for="cryptocurrency_pair">Cryptocurrency Pair:</label>
                 <input type="text" id="cryptocurrency_pair" name="cryptocurrency_pair" required><br><br>
                 <label for="interval">Interval:</label>
@@ -137,22 +148,20 @@
         <!-- Live Trading Section -->
         <div id="liveTrading">
             <h1>Live Trading</h1>
-            <form id="tradingForm">
+            <form method="POST" id="tradingForm">
                 <label for="symbol">Cryptocurrency Pair Symbol:</label>
                 <input type="text" id="symbol" name="symbol" required><br><br>
                 <label for="quantity">Symbol Quantity to Trade:</label>
                 <input type="number" id="quantity" name="quantity" required><br><br>
-                <button type="button" onclick="startAlgorithmicTrading()">Start Algorithmic Trading</button>
+                <input type="submit" value="Start Algorithmic Trading">
             </form>
         </div>
 
         <!-- Trading History Section -->
         <div id="tradingHistory">
             <h1>Trading History</h1>
-            <ul>
-                {% for message in trading_history %}
-                    <li>{{ message }}</li>
-                {% endfor %}
+            <ul id="tradingHistoryList">
+                <!-- Trading history items will be inserted here dynamically -->
             </ul>
         </div>
     </div>
@@ -202,10 +211,15 @@
             };
             xhr.send(new URLSearchParams(formData));
         });
-            // Function to update the trading history list
-        function startAlgorithmicTrading() {
+
+        // Function to algorithmic trading
+        document.getElementById('tradingForm').addEventListener('submit', function(event) {
+            // Prevent default form submission behavior
+            event.preventDefault();
+
             var symbol = document.getElementById('symbol').value;
             var quantity = document.getElementById('quantity').value;
+            var encodedSymbol = encodeURIComponent(symbol);
 
             var xhr = new XMLHttpRequest();
             xhr.open('POST', '/start_algorithmic_trading', true);
@@ -219,36 +233,45 @@
                     }
                 }
             };
-            xhr.send('symbol=' + encodeURIComponent(symbol) + '&quantity=' + encodeURIComponent(quantity));
-        }
+            xhr.send('symbol=' + encodedSymbol + '&quantity=' + encodeURIComponent(quantity));
+        });
 
-        document.getElementById('startTradingButton').addEventListener('click', startAlgorithmicTrading);
     </script>
-    <!-- Include jQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
     <script>
-        $(document).ready(function() {
-            function updateTradingHistory() {
-                $.ajax({
-                    type: "GET",
-                    url: "/get_trading_history",
-                    success: function(data) {
-                        $('#historyList').html('');
-                        $.each(data.history, function(index, message) {
-                            $('#historyList').append('<li>' + message + '</li>');
-                        });
-                    },
-                    complete: function() {
-                        // Schedule the next update after 15 seconds
-                        setTimeout(updateTradingHistory, 15000);
-                    }
-                });
-            }
+        function fetchTradingHistory() {
+            fetch('/get_trading_history')
+                .then(response => response.json())
+                .then(data => {
+                    const tradingHistoryList = document.getElementById('tradingHistoryList');
+                    tradingHistoryList.innerHTML = ''; // Clear previous content
+                    data.forEach(message => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = message;
 
-            // Initial call to updateTradingHistory
-            updateTradingHistory();
-        });
+                        // Apply different background colors based on content
+                        if (message.includes('Algorithmic Trading Started')) {
+                            listItem.style.backgroundColor = 'grey';
+                            listItem.style.fontWeight = 'bold';
+                            listItem.style.color = 'black';
+                            listItem.style.fontSize = '20px';
+                        } else if (message.includes('BUY')) {
+                            listItem.style.backgroundColor = 'green';
+                        } else if (message.includes('SELL')) {
+                            listItem.style.backgroundColor = 'red';
+                        }
+
+                        tradingHistoryList.appendChild(listItem);
+                    });
+                })
+                .catch(error => console.error('Error fetching trading history:', error));
+        }
+
+        // Fetch trading history initially when the page loads
+        fetchTradingHistory();
+
+        // Refresh trading history every 60 seconds
+        setInterval(fetchTradingHistory, 60000);
     </script>
 </body>
 </html>

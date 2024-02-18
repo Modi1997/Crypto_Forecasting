@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -22,7 +24,7 @@ app = Flask(__name__)
 
 
 trading_history = []
-def trading_strategy(symbol: str, qty: int, entried=False):
+def trading_strategy(symbol, qty: int, entried=False):
     """
     This is an EMA algorithmic trading strategy where we are following the trend (downtrend/uptrend)
 
@@ -32,11 +34,11 @@ def trading_strategy(symbol: str, qty: int, entried=False):
     :return: information of the BUY or SELL trade
     """
 
-    df = get_data(symbol, '1m', '3m')
-    ema = EMA(frame(symbol, '1m', '50h'))
-
     if not entried:
-        if (ema[-1] <= df['Close'].iloc[-1]).all():
+        df = get_data(symbol, '1m', '3m')
+        ema = EMA(frame(symbol, '1m', '50h'))
+
+        if (ema.iloc[-1] <= df['Close'].iloc[-1]).all():
             order = client.create_order(symbol=symbol,
                                         side='BUY',
                                         type='MARKET',
@@ -49,14 +51,18 @@ def trading_strategy(symbol: str, qty: int, entried=False):
                 'Quantity': order['origQty'],
                 'Price': order['fills'][0]['price']
             }
-            print(dt_string, '\n', order_info)
-            message = f"{dt_string}\n{order_info}"
+            message = f"{dt_string} {order_info}"
+            # dt_string = now.strftime("%d/%m %H:%M:%S")
+            # message = f"BUY {dt_string}"
             trading_history.append(message)
             entried = True
 
     if entried:
         while True:
-            if (ema > df['Close'].iloc[-1]).all():
+            df = get_data(symbol, '1m', '3m')
+            ema = EMA(frame(symbol, '1m', '50h'))
+
+            if (ema.iloc[-1] > df['Close'].iloc[-1]).all():
                 order = client.create_order(symbol=symbol,
                                             side='SELL',
                                             type='MARKET',
@@ -69,8 +75,7 @@ def trading_strategy(symbol: str, qty: int, entried=False):
                     'Quantity': order['origQty'],
                     'Price': order['fills'][0]['price']
                 }
-                print(dt_string, '\n', order_info)
-                message = f"{dt_string}\n{order_info}"
+                message = f"{dt_string} {order_info}"
                 trading_history.append(message)
                 break
 
@@ -92,12 +97,20 @@ def login():
 
 @app.route('/start_algorithmic_trading', methods=['POST'])
 def start_algorithmic_trading():
+    global trading_history
     symbol = request.form['symbol']
     qty = int(request.form['quantity'])
 
+    started = True
+    while started:
+        now = datetime.now()
+        dt_string = now.strftime("%d/%m %H:%M:%S")
+        trading_history = [f"Algorithmic Trading Started at: {dt_string}"]
+        started = False
+
     while True:
         trading_strategy(symbol, qty)
-        time.sleep(30)
+        time.sleep(10)
 
 
 def create_sequences(data, seq_length):
@@ -154,6 +167,7 @@ def generate_plot(y_test_original, y_pred_original, df_index, currency_pair):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    global trading_history
     if request.method == 'POST':
         cryptocurrency_pair = request.form['cryptocurrency_pair']
         interval = request.form['interval']
@@ -188,17 +202,18 @@ def index():
 
         # Calculate signals
         signal1, signal2 = calculate_signals(y_pred_original, y_test_original, macd_value, ema_value)
-
+        print(trading_history)
         return render_template('index.html', plot=fig.to_html(), macd_value=macd_value, rsi_value=rsi_value,
                                ema_value=ema_value, signal1=signal1, signal2=signal2, y_test_original=y_test_original,
                                y_pred_original=y_pred_original)
 
-    return render_template('index.html', trading_history=trading_history, plot=None)
+    return render_template('index.html', plot=None)
 
 
-@app.route('/get_trading_history')
+@app.route('/get_trading_history', methods=['GET'])
 def get_trading_history():
-    return jsonify({'history': trading_history})
+    global trading_history
+    return json.dumps(trading_history)
 
 
 if __name__ == '__main__':
