@@ -29,6 +29,16 @@ data_scaled = scaler.fit_transform(data)
 
 # Function to create sequences and labels for training the LSTM
 def create_sequences(data, seq_length):
+    """
+    Creates sequences of data with a specified length for sequence prediction tasks.
+
+    :param data: The input data sequence
+    :param seq_length: The length of each sequence
+    :return:
+        sequences (numpy.ndarray): Array of input sequences
+        labels (numpy.ndarray): Array of corresponding labels
+    """
+
     sequences, labels = [], []
     for i in range(len(data) - seq_length):
         seq = data[i:i + seq_length]

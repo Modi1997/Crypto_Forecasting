@@ -8,6 +8,7 @@ from Data_Preparation.final_df import get_df
 from Data_Preparation.subsets_and_target import create_target_variable
 import matplotlib.pyplot as plt
 import plotly.express as px
+from Neural_Networks.LSTM import create_sequences
 
 
 # data
@@ -21,15 +22,6 @@ scaler = MinMaxScaler(feature_range=(0, 1))
 data_scaled = scaler.fit_transform(data)
 
 # Function to create sequences and labels for training the GRU
-def create_sequences(data, seq_length):
-    sequences, labels = [], []
-    for i in range(len(data) - seq_length):
-        seq = data[i:i + seq_length]
-        label = data[i + seq_length]
-        sequences.append(seq)
-        labels.append(label)
-    return np.array(sequences), np.array(labels)
-
 
 # Define hyperparameters
 seq_length = 10
