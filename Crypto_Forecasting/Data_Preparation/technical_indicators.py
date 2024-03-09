@@ -14,7 +14,7 @@ def frame(symbol, interval, lookback):
     :param symbol: pair symbol such as BTCUSDT
     :param interval: bar or time interval (seconds, minutes or hours)
     :param lookback: seconds, minutes or hours of data to look back
-    :return: close
+    :return: close price only of the dataframe
     """
 
     # creating a df with the client.get_historical_klines() binance function

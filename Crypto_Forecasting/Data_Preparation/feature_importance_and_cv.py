@@ -1,21 +1,12 @@
-import numpy as np
 import pandas as pd
-from scikeras.wrappers import KerasRegressor
 from matplotlib import pyplot as plt
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import TimeSeriesSplit, cross_val_score, train_test_split
-from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
-import tensorflow as tf
 from tensorflow.keras.layers import LSTM, Dense
 from Data_Preparation.final_df import get_df
 from Data_Preparation.subsets_and_target import create_target_variable
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import TimeSeriesSplit
-from sklearn.metrics import mean_squared_error
 import numpy as np
 
 # data
@@ -46,7 +37,7 @@ importance_df = importance_df.sort_values(by='Importance', ascending=False)
 plt.figure(figsize=(10, 6))
 plt.barh(importance_df['Feature'], importance_df['Importance'])
 plt.xlabel('Importance')
-plt.ylabel('Feature')
+plt.ylabel('Features')
 plt.title('Feature Importance')
 plt.show()
 
