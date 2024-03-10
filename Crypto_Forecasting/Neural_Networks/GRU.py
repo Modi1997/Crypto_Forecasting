@@ -11,7 +11,7 @@ import plotly.express as px
 
 
 # data
-df = get_df("BTCUSDT", "12h", "60000h")
+df = get_df("BTCUSDT", "4h", "6000h")
 # target, features
 coin_df, target, features = create_target_variable(df)
 # Extract the 'Close' column for prediction

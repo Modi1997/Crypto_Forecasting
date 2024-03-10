@@ -52,8 +52,6 @@ def trading_strategy(symbol, qty: int, entried=False):
                 'Price': order['fills'][0]['price']
             }
             message = f"{dt_string} {order_info}"
-            # dt_string = now.strftime("%d/%m %H:%M:%S")
-            # message = f"BUY {dt_string}"
             trading_history.append(message)
             entried = True
 
@@ -181,16 +179,14 @@ def index():
         X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.1, shuffle=False)
         model = tf.keras.Sequential([
             tf.keras.layers.LSTM(units=30, activation='relu', input_shape=(20, 1)),
-            tf.keras.layers.Dense(units=1)
-        ])
+            tf.keras.layers.Dense(units=1)])
         model.compile(optimizer='adam', loss='mean_squared_error')
         history = model.fit(
             X_train, y_train,
             epochs=50,
             batch_size=32,
             validation_data=(X_val, y_val),
-            verbose=1
-        )
+            verbose=1)
         y_pred = model.predict(X_test)
         y_pred_original = scaler.inverse_transform(y_pred)
         y_test_original = scaler.inverse_transform(y_test.reshape(-1, 1))
@@ -200,7 +196,6 @@ def index():
         rsi_value = df['RSI'][-1]
         ema_value = df['EMA'][-1]
 
-        # Calculate signals
         signal1, signal2 = calculate_signals(y_pred_original, y_test_original, macd_value, ema_value)
         print(trading_history)
         return render_template('index.html', plot=fig.to_html(), macd_value=macd_value, rsi_value=rsi_value,

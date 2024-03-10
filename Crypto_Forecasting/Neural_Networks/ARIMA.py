@@ -1,6 +1,6 @@
 import numpy as np
 from statsmodels.tsa.arima.model import ARIMA
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.model_selection import ParameterGrid, TimeSeriesSplit
 from Data_Preparation.final_df import get_df
 import plotly.express as px
@@ -9,14 +9,14 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # get close data
-df = get_df("BTCUSDT", "12h", "60000h")
+df = get_df("BTCUSDT", "4h", "60000h")
 # get data per day
 data = df[df.index.hour == 0]
 
 # Hyperparameter tuning
-param_grid = {'p': range(3),
-              'd': range(3),
-              'q': range(3)}
+param_grid = {'p': range(6),
+              'd': range(6),
+              'q': range(6)}
 
 best_model = None
 best_rmse = np.inf
@@ -49,6 +49,8 @@ forecast = best_model.forecast(steps=len(test))
 
 # Evaluate the model
 rmse = np.sqrt(mean_squared_error(test['Close'], forecast))
+mae = mean_absolute_error(test['Close'], forecast)
+print("MAE:", mae)
 print("RMSE:", rmse)
 
 # actual vs ARIMA prediction close values
