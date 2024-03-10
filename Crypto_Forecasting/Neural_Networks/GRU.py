@@ -8,11 +8,10 @@ from Data_Preparation.final_df import get_df
 from Data_Preparation.subsets_and_target import create_target_variable
 import matplotlib.pyplot as plt
 import plotly.express as px
-from Neural_Networks.LSTM import create_sequences
 
 
 # data
-df = get_df("BTCUSDT", "4h", "60000h")
+df = get_df("BTCUSDT", "12h", "60000h")
 # target, features
 coin_df, target, features = create_target_variable(df)
 # Extract the 'Close' column for prediction
@@ -22,18 +21,26 @@ scaler = MinMaxScaler(feature_range=(0, 1))
 data_scaled = scaler.fit_transform(data)
 
 # Function to create sequences and labels for training the GRU
+def create_sequences(data, seq_length):
+    sequences, labels = [], []
+    for i in range(len(data) - seq_length):
+        seq = data[i:i + seq_length]
+        label = data[i + seq_length]
+        sequences.append(seq)
+        labels.append(label)
+    return np.array(sequences), np.array(labels)
+
 
 # Define hyperparameters
-seq_length = 10
+seq_length = 20
 epochs = 50
 batch_size = 32
-gru_units = 50
+gru_units = 30
 dense_units = 1
 learning_rate = 0.001
 
 # Create sequences and labels
 X, y = create_sequences(data_scaled, seq_length)
-
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
 
@@ -42,7 +49,6 @@ model = tf.keras.Sequential([
     tf.keras.layers.GRU(units=gru_units, activation='relu', input_shape=(seq_length, 1)),
     tf.keras.layers.Dense(units=dense_units)
 ])
-
 # Compile the model
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate), loss='mean_squared_error')
 
@@ -57,11 +63,9 @@ history = model.fit(
 
 # Evaluate the model on the test set
 y_pred = model.predict(X_test)
-
 # Inverse transform the predicted and actual values to the original scale
 y_pred_original = scaler.inverse_transform(y_pred)
 y_test_original = scaler.inverse_transform(y_test.reshape(-1, 1))
-
 # Calculate the MAE and RMSE
 mae = mean_absolute_error(y_test_original, y_pred_original)
 rmse = np.sqrt(mean_squared_error(y_test_original, y_pred_original))
@@ -79,7 +83,7 @@ df_plot = pd.DataFrame({
 fig_gru = px.line(df_plot,
               x='Time',
               y=['Actual Close', 'Predicted Close'],
-              title='LSTM Close Price Prediction',
+              title='GRU Close Price Prediction',
               labels={'Time': 'Time', 'value': 'Close Price', 'variable': 'Type'})
 fig_gru.update_layout(xaxis_title='Time',
                   yaxis_title='Close Price',

@@ -17,7 +17,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
 # data
-df = get_df("BTCUSDT", "4h", "60000h")
+df = get_df("BTCUSDT", "12h", "60000h")
 # target, features
 coin_df, target, features = create_target_variable(df)
 # Extract the 'Close' column for prediction

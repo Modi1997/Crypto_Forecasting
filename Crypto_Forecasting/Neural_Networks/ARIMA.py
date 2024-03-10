@@ -13,7 +13,7 @@ df = get_df("BTCUSDT", "12h", "60000h")
 # get data per day
 data = df[df.index.hour == 0]
 
-# Define parameter grid for ARIMA
+# Hyperparameter tuning
 param_grid = {'p': range(3),
               'd': range(3),
               'q': range(3)}
