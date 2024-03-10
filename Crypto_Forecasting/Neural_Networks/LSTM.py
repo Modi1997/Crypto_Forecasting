@@ -49,7 +49,7 @@ def create_sequences(data, seq_length):
 
 
 # Define hyperparameters
-seq_length = 20  # results: 3 bad, 10 normal, 15 good
+seq_length = 15  # results: 3 bad, 10 normal, 15 good
 epochs = 50
 batch_size = 32
 units = 30  # default = 50 but if 30 with 20 sequence there is a good training/validation
