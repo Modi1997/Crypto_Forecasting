@@ -1,6 +1,8 @@
+from Data_Preparation.final_df import *
+
 
 # get data
-df = get_data('BTCUSDT', '12h', '60000h')
+df = get_data('BTCUSDT', '4h', '60000h')
 # get only usefyl cols for faster computation
 data = df[['Open', 'High', 'Low', 'Close', 'Volume']]
 # get only timeframe needed
