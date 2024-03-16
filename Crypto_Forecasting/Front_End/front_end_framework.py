@@ -35,8 +35,8 @@ def trading_strategy(symbol, qty: int, entried=False):
     """
 
     if not entried:
-        df = get_data(symbol, '1m', '3m')
-        ema = EMA(frame(symbol, '1m', '50h'))
+        df = get_data(symbol, '1h', '60h')
+        ema = EMA(frame(symbol, '1h', '600h'))
 
         if (ema.iloc[-1] <= df['Close'].iloc[-1]).all():
             order = client.create_order(symbol=symbol,
@@ -57,8 +57,8 @@ def trading_strategy(symbol, qty: int, entried=False):
 
     if entried:
         while True:
-            df = get_data(symbol, '1m', '3m')
-            ema = EMA(frame(symbol, '1m', '50h'))
+            df = get_data(symbol, '1h', '60h')
+            ema = EMA(frame(symbol, '1h', '600h'))
 
             if (ema.iloc[-1] > df['Close'].iloc[-1]).all():
                 order = client.create_order(symbol=symbol,
@@ -108,7 +108,7 @@ def start_algorithmic_trading():
 
     while True:
         trading_strategy(symbol, qty)
-        time.sleep(10)
+        time.sleep(60)
 
 
 def create_sequences(data, seq_length):
