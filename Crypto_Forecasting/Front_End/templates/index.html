@@ -38,7 +38,7 @@
         }
         #accountInfo {
             position: absolute;
-            top: 60px;
+            top: 50px;
             right: 230px;
             padding: 10px;
         }
@@ -157,6 +157,9 @@
             </form>
         </div>
 
+        <!-- Stop Algorithmic Trading button -->
+        <button onclick="stopAlgorithmicTrading()" style="position: absolute; bottom: 405px; left: 230px;">Stop Algorithmic Trading</button>
+
         <!-- Trading History Section -->
         <div id="tradingHistory">
             <h1>Trading History</h1>
@@ -233,7 +236,7 @@
                     }
                 }
             };
-            xhr.send('symbol=' + encodedSymbol + '&quantity=' + encodeURIComponent(quantity));
+            xhr.send('symbol=' + encodeURIComponent(symbol) + '&quantity=' + encodeURIComponent(quantity));
         });
 
     </script>
@@ -271,7 +274,16 @@
         fetchTradingHistory();
 
         // Refresh trading history every 60 seconds
-        setInterval(fetchTradingHistory, 60000);
+        setInterval(fetchTradingHistory, 15000);
+    </script>
+
+    <script>
+        // Stop the Algorithmic Trading and display an alert
+        function stopAlgorithmicTrading() {
+            alert("Algorithmic trading stopped. Please either close the window or restart the application");
+            window.stop();
+            return;
+        }
     </script>
 </body>
 </html>

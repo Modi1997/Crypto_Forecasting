@@ -3,6 +3,7 @@ import json
 import pandas as pd
 import numpy as np
 import plotly.express as px
+import plotly.graph_objects as go
 import tensorflow as tf
 from datetime import datetime
 import time
@@ -98,7 +99,9 @@ def start_algorithmic_trading():
     global trading_history
     symbol = request.form['symbol']
     qty = int(request.form['quantity'])
-
+    if symbol == 'undefined':
+        symbol = 'ADAUSDT'
+    print(symbol, qty)
     started = True
     while started:
         now = datetime.now()
@@ -108,7 +111,7 @@ def start_algorithmic_trading():
 
     while True:
         trading_strategy(symbol, qty)
-        time.sleep(60)
+        time.sleep(30)
 
 
 def create_sequences(data, seq_length):
@@ -145,21 +148,83 @@ def calculate_signals(y_pred_original, y_test_original, macd_value, ema_value):
     return (signal1_text, signal1_color), (signal2_text, signal2_color)
 
 
-def generate_plot(y_test_original, y_pred_original, df_index, currency_pair):
+def generate_plot(y_test_original, y_pred_original, df_index, currency_pair, interval, X_test, df, model, scaler):
+    steps = 2
+
     df_plot = pd.DataFrame({
         'Time': df_index,
         f'Actual Close of {currency_pair}': y_test_original.flatten(),
         f'Predicted Close of {currency_pair}': y_pred_original.flatten()
     })
-    fig = px.line(df_plot, x='Time', y=[f'Actual Close of {currency_pair}', f'Predicted Close of {currency_pair}'],
-                  title=f"<b>Actual and Forecast Price of {currency_pair}</b>",
-                  labels={'Time': 'Time', 'value': 'Close Price', 'variable': 'Type'})
-    fig.update_layout(xaxis_title='Time', yaxis_title='Close Price', legend_title='Type', hovermode='x')
 
-    # Update title position
-    fig.update_layout(title_x=0.5)
-    # Increase the height of the chart
-    fig.update_layout(height=540)
+    def calculate_step_size(frequency):
+        if frequency.endswith('m'):
+            step_size = pd.Timedelta(minutes=int(frequency[:-1]))
+        elif frequency.endswith('h'):
+            step_size = pd.Timedelta(hours=int(frequency[:-1]))
+        elif frequency.endswith('d'):
+            step_size = pd.Timedelta(days=int(frequency[:-1]))
+        elif frequency.endswith('w'):
+            step_size = pd.Timedelta(weeks=int(frequency[:-1]))
+        else:
+            raise ValueError("Invalid frequency format. Please use 'm' for minutes, 'h' for hours, or 'd' for days.")
+        return step_size
+
+    # Function to generate next steps index based on the frequency
+    def generate_next_steps_index(df, num_steps, frequency):
+        last_timestamp = df.index[-1]
+        step_size = calculate_step_size(frequency)
+        next_steps_index = pd.date_range(start=last_timestamp + step_size, periods=num_steps, freq=step_size)
+        return next_steps_index
+
+    last_sequence = X_test[-1:]
+    # Predict the next two steps
+    next_steps = []
+    for _ in range(2):
+        next_step_pred = model.predict(last_sequence.reshape(1, 20, 1))
+        next_steps.append(next_step_pred)
+        last_sequence = np.append(last_sequence[:, 1:, :], next_step_pred.reshape(1, 1, 1), axis=1)
+
+    # Inverse transform the predicted values to the original scale
+    next_steps_original = scaler.inverse_transform(np.array(next_steps).reshape(2, 1))
+
+    # Extend the DataFrame to include the forecasted values
+    next_steps_index = generate_next_steps_index(df, steps, interval)
+    next_steps_df = pd.DataFrame({
+        'Time': next_steps_index,
+        f'Predicted Close of {currency_pair}': next_steps_original.flatten()
+    })
+
+    # Concatenate the forecasted values to the existing DataFrame
+    df_plot_extended = pd.concat([df_plot, next_steps_df], ignore_index=True)
+    #
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(x=df_plot_extended['Time'], y=df_plot_extended[f'Actual Close of {currency_pair}'], mode='lines',
+                   name=f'Actual Close of {currency_pair}'))
+
+    # Add predicted close price line
+    fig.add_trace(
+        go.Scatter(x=df_plot_extended['Time'], y=df_plot_extended[f'Predicted Close of {currency_pair}'], mode='lines',
+                   name=f'Predicted Close of {currency_pair}'))
+
+    # Add scatter plot for forecasted values
+    fig.add_trace(
+        go.Scatter(x=next_steps_df['Time'], y=next_steps_df[f'Predicted Close of {currency_pair}'], mode='markers',
+                   name='Forecasted Values', marker=dict(color='green', size=6)))
+
+    # Adjust X-axis range
+    x_range_max = next_steps_df['Time'].max()  + pd.Timedelta(hours=6)
+    fig.update_xaxes(range=[df_plot_extended['Time'].min(),
+                            x_range_max])  # Set X-axis range from the minimum date to the maximum date
+
+    fig.update_layout(title=f"<b>Actual and Forecast Price of {currency_pair}</b>",
+                      xaxis_title='Time',
+                      yaxis_title='Close Price',
+                      legend_title='Type',
+                      hovermode='x',
+                      title_x=0.5,
+                      height=540)
     return fig
 
 
@@ -190,11 +255,11 @@ def index():
         y_pred = model.predict(X_test)
         y_pred_original = scaler.inverse_transform(y_pred)
         y_test_original = scaler.inverse_transform(y_test.reshape(-1, 1))
-        fig = generate_plot(y_test_original, y_pred_original, df.index[-len(y_test):], cryptocurrency_pair)
+        fig = generate_plot(y_test_original, y_pred_original, df.index[-len(y_test):], cryptocurrency_pair, interval ,X_test, df,  model,scaler)
 
-        macd_value = df['MACD'][-1]
-        rsi_value = df['RSI'][-1]
-        ema_value = df['EMA'][-1]
+        macd_value = df['MACD'].iloc[-1]
+        rsi_value = df['RSI'].iloc[-1]
+        ema_value = df['EMA'].iloc[-1]
 
         signal1, signal2 = calculate_signals(y_pred_original, y_test_original, macd_value, ema_value)
         print(trading_history)

@@ -4,9 +4,10 @@ from sklearn.preprocessing import MinMaxScaler
 import tensorflow as tf
 from Data_Preparation.final_df import get_df
 from Data_Preparation.subsets_and_target import create_target_variable
-from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_absolute_percentage_error
 import numpy as np
 import plotly.express as px
+import plotly.graph_objects as go
 import pandas as pd
 import os
 import warnings
@@ -17,7 +18,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
 # data
-df = get_df("BTCUSDT", "4h", "60000h")
+df = get_df("BTCUSDT", "1d", "1200d")
 # target, features
 coin_df, target, features = create_target_variable(df)
 # Extract the 'Close' column for prediction
@@ -25,6 +26,8 @@ data = df['Close'].values.reshape(-1, 1)
 # Normalize the data
 scaler = MinMaxScaler(feature_range=(0, 1))
 data_scaled = scaler.fit_transform(data)
+# horizontal steps
+steps = 2
 
 
 # Function to create sequences and labels for training the LSTM
@@ -91,8 +94,10 @@ y_test_original = scaler.inverse_transform(y_test.reshape(-1, 1))
 # Calculate the MAE and RMSE
 mae = mean_absolute_error(y_test_original, y_pred_original)
 rmse = np.sqrt(mean_squared_error(y_test_original, y_pred_original))
+mape = mean_absolute_percentage_error(y_test_original, y_pred_original)
 print(f"Mean Absolute Error (MAE): {mae}")
 print(f"Root Mean Squared Error (RMSE): {rmse}")
+print(f"Mean Absolute Percentage Error (MAPE): {mape}")
 
 # Create a DataFrame containing the actual and predicted values along with the corresponding timestamps
 df_plot = pd.DataFrame({
@@ -101,16 +106,73 @@ df_plot = pd.DataFrame({
     'Predicted Close': y_pred_original.flatten()
     })
 
-# Create a line plot using Plotly Express
-fig_lstm = px.line(df_plot, x='Time',
-              y=['Actual Close', 'Predicted Close'],
-              title='LSTM Close Price Prediction',
-              labels={'Time': 'Time', 'value': 'Close Price', 'variable': 'Type'})
-fig_lstm.update_layout(xaxis_title='Time',
-                       yaxis_title='Close Price',
-                       legend_title='Type',
-                       hovermode='x')
-fig_lstm.show()
+def calculate_step_size(frequency):
+    if frequency.endswith('m'):
+        step_size = pd.Timedelta(minutes=int(frequency[:-1]))
+    elif frequency.endswith('h'):
+        step_size = pd.Timedelta(hours=int(frequency[:-1]))
+    elif frequency.endswith('d'):
+        step_size = pd.Timedelta(days=int(frequency[:-1]))
+    elif frequency.endswith('w'):
+        step_size = pd.Timedelta(weeks=int(frequency[:-1]))
+    else:
+        raise ValueError("Invalid frequency format. Please use 'm' for minutes, 'h' for hours, or 'd' for days.")
+    return step_size
+
+# Function to generate next steps index based on the frequency
+def generate_next_steps_index(df, num_steps, frequency):
+    last_timestamp = df.index[-1]
+    step_size = calculate_step_size(frequency)
+    next_steps_index = pd.date_range(start=last_timestamp + step_size, periods=num_steps, freq=frequency)
+    return next_steps_index
+
+last_sequence = X_test[-1:]
+# Predict the next two steps
+next_steps = []
+for _ in range(2):
+    next_step_pred = model.predict(last_sequence.reshape(1, seq_length, 1))
+    next_steps.append(next_step_pred)
+    last_sequence = np.append(last_sequence[:, 1:, :], next_step_pred.reshape(1, 1, 1), axis=1)
+
+# Inverse transform the predicted values to the original scale
+next_steps_original = scaler.inverse_transform(np.array(next_steps).reshape(2, 1))
+
+# Extend the DataFrame to include the forecasted values
+next_steps_index = generate_next_steps_index(df, steps, "1d")
+next_steps_df = pd.DataFrame({
+    'Time': next_steps_index,
+    'Predicted Close': next_steps_original.flatten()
+})
+
+# Concatenate the forecasted values to the existing DataFrame
+df_plot_extended = pd.concat([df_plot, next_steps_df], ignore_index=True)
+
+fig = go.Figure()
+fig.add_trace(
+    go.Scatter(x=df_plot_extended['Time'], y=df_plot_extended[f'Actual Close'], mode='lines',
+               name=f'Actual Close'))
+
+# Add predicted close price line
+fig.add_trace(
+    go.Scatter(x=df_plot_extended['Time'], y=df_plot_extended[f'Predicted Close'], mode='lines',
+               name=f'Predicted Close'))
+
+# Add scatter plot for forecasted values
+fig.add_trace(
+    go.Scatter(x=next_steps_df['Time'], y=next_steps_df[f'Predicted Close'], mode='markers',
+               name='Forecasted Values', marker=dict(color='green', size=6)))
+
+# Adjust X-axis range
+x_range_max = next_steps_df['Time'].max() + pd.Timedelta(hours=12)
+fig.update_xaxes(range=[df_plot_extended['Time'].min(),
+                        x_range_max])  # Set X-axis range from the minimum date to the maximum date
+
+fig.update_layout(title=f"<b>Actual and Forecast Price</b>",
+                  xaxis_title='Time',
+                  yaxis_title='Close Price',
+                  legend_title='Type',
+                  hovermode='x',)
+fig.show()
 
 # Extract loss values from the history
 train_loss = history.history['loss']

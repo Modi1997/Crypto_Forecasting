@@ -18,16 +18,23 @@ def strategy(symbol: str, qty: int, entried=False):
     :return: information of the BUY or SELL trade
     """
 
+    # df of symbol
     df = get_data(symbol, '15m', '30m')
+    # cumulative percentage change until last data row
     close = (df.Close.pct_change() + 1).cumprod() - 1
-
+    # exponential moving average
+    ema = EMA(frame(symbol, '15m', '600h'))
+    # and relative strength index
+    rsi = RSI(frame(symbol, '15m', '600h'))
+    # moving average convergence divergence
     macd = MACD(symbol, '15m', '1100m')
+    # getting the diff array or total (pos-neg)
     macd1 = macd[-1][-1]
 
     # we are looking for the right timing to open a LONG position
     if not entried:
 
-        if ((macd1 > 0.00015) and (close[-1] > 0.002)) or (close[-1] > 0.014):
+        if ((macd1 > 0.00015) and ((ema.iloc[-1] <= df['Close'].iloc[-1]).all()) and (rsi.iloc[-1] < 70) and (close[-1] > 0.002)) or (close[-1] > 0.014):
             order = client.create_order(symbol=symbol,
                                         side='BUY',
                                         type='MARKET',
