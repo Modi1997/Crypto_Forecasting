@@ -197,7 +197,6 @@ def generate_plot(y_test_original, y_pred_original, df_index, currency_pair, int
 
     # Concatenate the forecasted values to the existing DataFrame
     df_plot_extended = pd.concat([df_plot, next_steps_df], ignore_index=True)
-    #
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(x=df_plot_extended['Time'], y=df_plot_extended[f'Actual Close of {currency_pair}'], mode='lines',
