@@ -10,7 +10,7 @@ None of the content within this repository should be considered financial advice
 
 ## How to Get Started
 ### 1) Connect Your Binance Portfolio:
-Utilize the provided API to seamlessly connect your Binance portfolio address. You will need to activate the API within your Binance portfolio, copy the API key and paste it at the 'api_key' variable located into the Binance-API.py file
+Utilize the provided API to connect your Binance portfolio address seamlessly. Initially, you will need to activate the API within your Binance portfolio and give the right permissions to the IP address. Afterwards, run the front_end_framework.py and navigate to the second page 'Algorithmic Trading'. Last, copy the API key and secret password from Binance and paste them into the portfolio connection details.
 
 ### 2) Explore Live Trading:
 Engage in live trading activities across a diverse range of cryptocurrencies and timeframes.
