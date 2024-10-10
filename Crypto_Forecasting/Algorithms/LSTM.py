@@ -25,7 +25,7 @@ coin_df, target, features = create_target_variable(df)
 # Extract the 'Close' column for prediction
 data = df['Close'].values.reshape(-1, 1)
 # Normalize the data
-scaler = MinMaxScaler(feature_range=(0, 1)) 
+scaler = MinMaxScaler(feature_range=(0, 1))
 data_scaled = scaler.fit_transform(data)
 # horizontal steps
 steps = 2
@@ -101,7 +101,7 @@ print(f"Root Mean Squared Error (RMSE): {rmse}")
 print(f"Mean Absolute Percentage Error (MAPE): {mape}")
 
 # Create a DataFrame containing the actual and predicted values along with the corresponding timestamps
-df_plot = pd.DataFrame({
+df_plot_lstm = pd.DataFrame({
     'Time': df.index[-len(y_test):],
     'Actual Close': y_test_original.flatten(),
     'Predicted Close': y_pred_original.flatten()
@@ -146,7 +146,7 @@ next_steps_df = pd.DataFrame({
 })
 
 # Concatenate the forecasted values to the existing DataFrame
-df_plot_extended = pd.concat([df_plot, next_steps_df], ignore_index=True)
+df_plot_extended = pd.concat([df_plot_lstm, next_steps_df], ignore_index=True)
 
 fig = go.Figure()
 fig.add_trace(
