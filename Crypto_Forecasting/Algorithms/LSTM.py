@@ -25,7 +25,7 @@ coin_df, target, features = create_target_variable(df)
 # Extract the 'Close' column for prediction
 data = df['Close'].values.reshape(-1, 1)
 # Normalize the data
-scaler = MinMaxScaler(feature_range=(0, 1))
+scaler = MinMaxScaler(feature_range=(0, 1)) 
 data_scaled = scaler.fit_transform(data)
 # horizontal steps
 steps = 2
