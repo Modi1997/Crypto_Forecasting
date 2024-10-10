@@ -1,6 +1,7 @@
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
+from Algorithms.GRU import *
 import tensorflow as tf
 from Data_Preparation.final_df import get_df
 from Data_Preparation.subsets_and_target import create_target_variable
@@ -18,7 +19,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
 # data
-df = get_df("BTCUSDT", "1d", "1200d")
+df = get_df("BTCUSDT", "1d", "2200d")
 # target, features
 coin_df, target, features = create_target_variable(df)
 # Extract the 'Close' column for prediction
@@ -182,7 +183,7 @@ val_loss = history.history['val_loss']
 plt.figure(figsize=(10, 6))
 plt.plot(range(2, epochs + 1), train_loss[1:], label='Training Loss', marker='o')
 plt.plot(range(2, epochs + 1), val_loss[1:], label='Validation Loss', marker='o')
-plt.title('Training and Validation Loss')
+plt.title('Training and Validation Loss LSTM')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.legend()

@@ -11,7 +11,7 @@ import plotly.express as px
 
 
 # data
-df = get_df("BTCUSDT", "4h", "6000h")
+df = get_df("BTCUSDT", "1d", "2000d")
 # target, features
 coin_df, target, features = create_target_variable(df)
 # Extract the 'Close' column for prediction
@@ -32,10 +32,10 @@ def create_sequences(data, seq_length):
 
 
 # Define hyperparameters
-seq_length = 20
+seq_length = 10
 epochs = 50
 batch_size = 32
-gru_units = 30
+gru_units = 50
 dense_units = 1
 learning_rate = 0.001
 
@@ -73,14 +73,14 @@ print(f"Mean Absolute Error (MAE): {mae}")
 print(f"Root Mean Squared Error (RMSE): {rmse}")
 
 # Create a DataFrame containing the actual and predicted values along with the corresponding timestamps
-df_plot = pd.DataFrame({
+df_plot_gru = pd.DataFrame({
     'Time': df.index[-len(y_test):],
     'Actual Close': y_test_original.flatten(),
     'Predicted Close': y_pred_original.flatten()
 })
 
 # Create a line plot using Plotly Express
-fig_gru = px.line(df_plot,
+fig_gru = px.line(df_plot_gru,
               x='Time',
               y=['Actual Close', 'Predicted Close'],
               title='GRU Close Price Prediction',
@@ -97,7 +97,7 @@ val_loss = history.history['val_loss']
 plt.figure(figsize=(10, 6))
 plt.plot(range(2, epochs + 1), train_loss[1:], label='Training Loss', marker='o')
 plt.plot(range(2, epochs + 1), val_loss[1:], label='Validation Loss', marker='o')
-plt.title('Training and Validation Loss')
+plt.title('Training and Validation Loss GRU')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.legend()
