@@ -19,4 +19,3 @@ Engage in live trading activities across a diverse range of cryptocurrencies and
 If you have any questions or encounter issues with the repository, please feel free to reach out to the repository admin at modiosmena@hotmail.com. We are here to assist you!
 
 Happy forecasting! 🌐✨
- 
